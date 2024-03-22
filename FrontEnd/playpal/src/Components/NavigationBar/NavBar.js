@@ -6,11 +6,11 @@ const NavBar = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [showLoginForm, setShowLoginForm] = useState(false);
     const [showRegisterForm, setShowRegisterForm] = useState(false);
+    const [loginError, setLoginError] = useState('');
+    const [registerError, setRegisterError] = useState('');
 
     const handleLogout = () => {
-        // Implement logout logic here
-        // For example, clear the user token or user state
-        setIsLoggedIn(false); // Update the state to reflect that the user is logged out
+        setIsLoggedIn(false);
     };
 
     const handleLoginClick = () => {
@@ -19,12 +19,14 @@ const NavBar = () => {
         } else {
             setShowLoginForm(!showLoginForm);
             setShowRegisterForm(false);
+            setLoginError(''); // Clear previous error messages
         }
     };
 
     const handleRegister = () => {
         setShowRegisterForm(!showRegisterForm);
         setShowLoginForm(false);
+        setRegisterError(''); // Clear previous error messages
     };
 
     const submitLogin = async (event) => {
@@ -33,14 +35,16 @@ const NavBar = () => {
         const password = event.target.password.value;
         try {
             const response = await post('/login', { username, password });
-            console.log('Login successful:', response);
-            setIsLoggedIn(true); // Update the state to reflect that the user is logged in
-            setShowLoginForm(false); // Hide the login form
+            setIsLoggedIn(true);
+            setShowLoginForm(false);
+            setLoginError('');
         } catch (error) {
-            console.log('Login failed:', error);
+            // Assuming the API returns a structured error, you can display a message
+            // Adjust based on your API's error structure
+            setLoginError(error.response?.data?.message || 'Login failed. Please try again.');
         }
     };
-
+    
     const submitRegister = async (event) => {
         event.preventDefault();
         const username = event.target.username.value;
@@ -48,10 +52,11 @@ const NavBar = () => {
         const email = event.target.email.value;
         try {
             const response = await post('/register', { username, email, password });
-            console.log('Registration successful:', response);
-            setShowRegisterForm(false); // Hide the registration form
+            setShowRegisterForm(false);
+            setRegisterError('');
         } catch (error) {
-            console.log('Registration failed:', error);
+            // Adjust the error handling based on your API's response structure
+            setRegisterError(error.response?.data?.message || 'Registration failed. Please try again.');
         }
     };
 
@@ -68,6 +73,7 @@ const NavBar = () => {
                         <input type="text" placeholder="Username" name="username" required />
                         <input type="password" placeholder="Password" name="password" required />
                         <button type="submit">Login</button>
+                        {loginError && <div className="error-message">{loginError}</div>}
                     </form>
                 </div>
             )}
@@ -78,6 +84,7 @@ const NavBar = () => {
                         <input type="email" placeholder="Email" name="email" required />
                         <input type="password" placeholder="Password" name="password" required />
                         <button type="submit">Register</button>
+                        {registerError && <div className="error-message">{registerError}</div>}
                     </form>
                 </div>
             )}
