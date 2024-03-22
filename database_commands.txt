@@ -11,7 +11,8 @@ CREATE TABLE user_table (
     userName VARCHAR(255),
     passWord VARCHAR(255),
     Email VARCHAR(255),
-    RegistrationDate TIMESTAMP
+    RegistrationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 
 
