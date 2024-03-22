@@ -1,1 +1,26 @@
+# dependencies
+FrontEnd/playpal/node_modules
+FrontEnd/playpal/.pnp
+FrontEnd/playpal/.pnp.js
+
+# testing
+FrontEnd/playpal/coverage
+
+# production
+FrontEnd/playpal/build
+
+# misc
+FrontEnd/playpal.DS_Store
+FrontEnd/playpal.env.local
+FrontEnd/playpal.env.development.local
+FrontEnd/playpal.env.test.local
+FrontEnd/playpal.env.production.local
+BackEnd/playpal.env.local
+BackEnd/playpal.env.development.local
+BackEnd/playpal.env.test.local
+BackEnd/playpal.env.production.local
 /BackEnd/venv
+
+FrontEnd/playpalnpm-debug.log*
+FrontEnd/playpalyarn-debug.log*
+FrontEnd/playpalyarn-error.log*
