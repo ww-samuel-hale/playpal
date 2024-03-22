@@ -1,17 +1,17 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 import os
+from models import User, db
 
 load_dotenv()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 CORS(app)
 
-db = SQLAlchemy(app)
+db.init_app(app)
 
 bcrypt = Bcrypt(app)
 
@@ -36,12 +36,21 @@ def register():
     password = request.json.get('password')
     email = request.json.get('email')
 
+    # Check if the username or email already exists in the database
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
+        return jsonify(message="Username already exists"), 409
+    
     # Hash the password
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-
-    # Store the hashed password in the database instead of the plain one
-    new_user = db
-
+    
+    # Create a new user
+    new_user = User(username=username, password=hashed_password, email=email)
+    
+    # Add the new user to the database
+    db.session.add(new_user)
+    db.session.commit()
+    
     return jsonify(message="User registered successfully"), 200
 
 @app.route('/api/login', methods=['POST'])
@@ -52,7 +61,7 @@ def login():
 
     # Fetch the user from the database by username
     # and get the stored hashed password
-    user = db.session.query(user_table).filter_by(username=username).first()
+    user = User.query.filter_by(username=username).first()
 
     if user and bcrypt.check_password_hash(user.password, password):
         # Authentication successful
