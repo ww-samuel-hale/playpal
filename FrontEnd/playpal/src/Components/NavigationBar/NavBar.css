@@ -1,0 +1,38 @@
+/* NavBar container */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #333;
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+/* NavBar logo */
+.navbar-logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* NavBar menu */
+.navbar-menu {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-menu button {
+    margin-left: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.navbar-menu button:hover {
+    background-color: #0056b3;
+}
