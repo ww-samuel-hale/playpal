@@ -1,0 +1,17 @@
+CREATE ROLE playpal WITH LOGIN PASSWORD 'uRDVucInX2Vpg';
+
+GRANT ALL PRIVILEGES ON DATABASE playpal TO playpal;
+
+CREATE DATABASE playpal;
+
+\c playpal
+
+CREATE TABLE user_table (
+    UserID INT PRIMARY KEY,
+    userName VARCHAR(255),
+    passWord VARCHAR(255),
+    Email VARCHAR(255),
+    RegistrationDate TIMESTAMP
+);
+
+

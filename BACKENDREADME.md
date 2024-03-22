@@ -36,3 +36,10 @@
 {
     "message": "Hello from Flask!"
 }
+
+### DATABASE SETUP
+1. Install PostGres App
+2. Start your database server
+3. Click the postgres database
+4. Enter 'psql -U postgres' into new cli
+5. 'CREATE DATABASE playpal;'
