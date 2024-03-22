@@ -20,6 +20,7 @@ BackEnd/playpal.env.development.local
 BackEnd/playpal.env.test.local
 BackEnd/playpal.env.production.local
 /BackEnd/venv
+/BackEnd/.env
 
 FrontEnd/playpalnpm-debug.log*
 FrontEnd/playpalyarn-debug.log*
