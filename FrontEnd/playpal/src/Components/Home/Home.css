@@ -1,0 +1,18 @@
+/* Styles for the Home component */
+.home-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; /* Make it at least as tall as the viewport */
+    padding: 20px;
+    background-color: #f7f7f7; /* Light grey background */
+}
+
+.home-container h1 {
+    color: #333; /* Dark grey color for the text */
+    font-size: 2rem; /* 2 times the base font size */
+    margin-bottom: 20px; /* Space below the heading */
+}
+
+/* Add your additional styles below */

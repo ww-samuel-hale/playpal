@@ -1,0 +1,74 @@
+.game-card {
+    width: 300px; /* Adjust width as needed */
+    margin: 20px auto; /* Center the card horizontally */
+    padding: 20px;
+    padding-bottom: 70px; /* Increased padding at the bottom to make space for buttons */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add some shadow for a 3D effect */
+    border-radius: 10px; /* Rounded corners */
+    background-color: #fff; /* Card background color */
+    position: relative; /* Needed for positioning the thumbs up/down buttons */
+    overflow: hidden; /* Hide overflow */
+    display: flex; /* Added to make flex-direction work */
+    flex-direction: column; /* Stack children vertically */
+    justify-content: space-between; /* Space between content and buttons */
+    text-align: left; /* Align text to the left */
+}
+  
+.game-card img {
+    display: block; /* Remove any extra space beneath the image */
+    max-width: 100%; /* Max width to its natural size to prevent upscaling */
+    max-height: 90px; /* Example max height to prevent upscaling */
+    width: auto; /* Width is automatic */
+    height: auto; /* Height is automatic */
+    object-fit: contain; /* Contain the image within the given dimensions */
+    margin: auto; /* Center the image within its container */
+    border-radius: 5px; /* Rounded corners for the image */
+}
+
+.game-card-image-container {
+    display: flex; /* Use flexbox to center the image */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    height: 180px; /* Fixed height for the image container */
+    background-color: #eaeaea; /* A background color for the empty space */
+    border-radius: 5px; /* Match the card's border radius */
+    overflow: hidden; /* Hide any overflow */
+}
+  
+.game-card h2 {
+    margin: 10px 0;
+    font-size: 1.5em; /* Larger text for the game title */
+    text-align: center; /* Center the title */
+}
+  
+.game-card p {
+    margin: 5px 0;
+    line-height: 1.4; /* More readable line spacing */
+}
+  
+  
+.game-card button {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    position: absolute; /* Absolute positioning relative to the parent */
+    bottom: 10px; /* Slightly above the bottom of the card */
+}
+  
+.game-card button:first-child {
+    left: 20px; /* Thumbs down button on the left */
+    background-color: #007bff; /* Red background */
+    color: white; /* White text */
+}
+  
+.game-card button:last-child {
+    right: 20px; /* Thumbs up button on the right */
+    background-color: #007bff; /* Green background */
+    color: white; /* White text */
+}
+
+.game-card p strong {
+    font-weight: bold; /* Make field names bold */
+}
+  
