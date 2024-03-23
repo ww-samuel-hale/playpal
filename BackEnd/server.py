@@ -107,48 +107,49 @@ def get_games():
 def get_recommendation():
     recommendation_array = wrapper.api_request(
             'games',
-            'fields id, name, cover, genres, platforms, rating, summary; search "Fallout: New Vegas"; limit 1;'
+            'fields id, name, cover, genres, platforms, rating, summary; where rating > 80; limit 10;'
           )
     
-    recommendation = json.loads(recommendation_array)
-    
-    # Round off the rating to a whole number
-    recommendation[0]['rating'] = round(recommendation[0]['rating'])
-    
-    game_cover_array = wrapper.api_request(
+    recommendations = json.loads(recommendation_array)
+
+    for recommendation in recommendations:
+        # Round off the rating to a whole number
+        recommendation['rating'] = round(recommendation['rating'])
+
+        game_cover_array = wrapper.api_request(
             'artworks',
-            'fields url; where game = ' + str(recommendation[0]['id']) + '; limit 1;'
-    )
-    
-    game_cover = json.loads(game_cover_array)
-    
-    # modify recommendation to inlcude cover url
-    if (len(game_cover) > 0):
-        recommendation[0]['cover'] = game_cover[0]['url']
-    else:
-        recommendation[0]['cover'] = '../FrontEnd/public/logo192.png'
-        
-    # Convert genres array from genre id's to genre names
-    genres_array = wrapper.api_request(
+            'fields url; where game = ' + str(recommendation['id']) + '; limit 1;'
+        )
+
+        game_cover = json.loads(game_cover_array)
+
+        # modify recommendation to include cover url
+        if len(game_cover) > 0:
+            recommendation['cover'] = game_cover[0]['url']
+        else:
+            recommendation['cover'] = '../FrontEnd/public/logo192.png'
+
+        # Convert genres array from genre id's to genre names
+        genres_array = wrapper.api_request(
             'genres',
-            'fields name; where id = (' + ', '.join(str(genre_id) for genre_id in recommendation[0]['genres']) + ');'
-          )
-    
-    genres = json.loads(genres_array)
-    
-    recommendation[0]['genres'] = [genre['name'] for genre in genres]
-    
-    # Modify platforms array from platform id's to platform names
-    platforms_array = wrapper.api_request(
+            'fields name; where id = (' + ', '.join(str(genre_id) for genre_id in recommendation['genres']) + ');'
+        )
+
+        genres = json.loads(genres_array)
+
+        recommendation['genres'] = [genre['name'] for genre in genres]
+
+        # Modify platforms array from platform id's to platform names
+        platforms_array = wrapper.api_request(
             'platforms',
-            'fields name; where id = (' + ', '.join(str(platform_id) for platform_id in recommendation[0]['platforms']) + ');'
-          )
+            'fields name; where id = (' + ', '.join(str(platform_id) for platform_id in recommendation['platforms']) + ');'
+        )
+
+        platforms = json.loads(platforms_array)
+
+        recommendation['platforms'] = [platform['name'] for platform in platforms]
     
-    platforms = json.loads(platforms_array)
-    
-    recommendation[0]['platforms'] = [platform['name'] for platform in platforms]
-    
-    return jsonify(recommendation), 200    
+    return jsonify(recommendations), 200    
     
 
 if __name__ == '__main__':
