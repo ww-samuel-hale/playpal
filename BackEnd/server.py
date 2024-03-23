@@ -107,7 +107,7 @@ def get_games():
 def get_recommendation():
     recommendation_array = wrapper.api_request(
             'games',
-            'fields id, name, cover, genres, platforms, rating, summary; where rating > 80; limit 10;'
+            'fields id, name, cover.url, genres.name, platforms.name, rating, summary; where rating > 80; limit 10;'
           )
     
     recommendations = json.loads(recommendation_array)
@@ -116,38 +116,15 @@ def get_recommendation():
         # Round off the rating to a whole number
         recommendation['rating'] = round(recommendation['rating'])
 
-        game_cover_array = wrapper.api_request(
-            'artworks',
-            'fields url; where game = ' + str(recommendation['id']) + '; limit 1;'
-        )
-
-        game_cover = json.loads(game_cover_array)
-
         # modify recommendation to include cover url
-        if len(game_cover) > 0:
-            recommendation['cover'] = game_cover[0]['url']
+        if len(recommendation['cover']['url']) > 0:
+            recommendation['cover'] = recommendation['cover']['url']
         else:
             recommendation['cover'] = '../FrontEnd/public/logo192.png'
 
-        # Convert genres array from genre id's to genre names
-        genres_array = wrapper.api_request(
-            'genres',
-            'fields name; where id = (' + ', '.join(str(genre_id) for genre_id in recommendation['genres']) + ');'
-        )
+        recommendation['genres'] = [genre['name'] for genre in recommendation['genres']]
 
-        genres = json.loads(genres_array)
-
-        recommendation['genres'] = [genre['name'] for genre in genres]
-
-        # Modify platforms array from platform id's to platform names
-        platforms_array = wrapper.api_request(
-            'platforms',
-            'fields name; where id = (' + ', '.join(str(platform_id) for platform_id in recommendation['platforms']) + ');'
-        )
-
-        platforms = json.loads(platforms_array)
-
-        recommendation['platforms'] = [platform['name'] for platform in platforms]
+        recommendation['platforms'] = [platform['name'] for platform in recommendation['platforms']]
     
     return jsonify(recommendations), 200    
     

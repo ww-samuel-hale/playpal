@@ -1,16 +1,24 @@
-// Discovery.js
 import React, { useState } from 'react';
 import GameCard from '../GameCard/GameCard';
 import './Discovery.css';
 import { get } from '../../Utilities/api-utility';
 
 const Discovery = () => {
-    const [games, setGames] = useState([]); // Array of game objects
+    const [games, setGames] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isLoading, setIsLoading] = useState(false); // Loading state
 
     const handleGenerateRecommendations = async () => {
-        const recommendations = await get('/recommendation'); // A list of json objects
-        setGames(recommendations);
+        setIsLoading(true); // Start loading
+        try {
+            const recommendations = await get('/recommendation');
+            setGames(recommendations);
+        } catch (error) {
+            console.error('Failed to fetch recommendations:', error);
+            // Handle error state if necessary
+        } finally {
+            setIsLoading(false); // End loading
+        }
     };
 
     const handleNext = () => {
@@ -24,13 +32,15 @@ const Discovery = () => {
     return (
         <div className="discovery-container">
             <h1>Welcome to Discovery</h1>
-            <button onClick={handleGenerateRecommendations}>Generate Recommendations</button>
+            <button onClick={handleGenerateRecommendations} disabled={isLoading}>
+                {isLoading ? <div className='spinner'></div> : 'Generate Recommendations'}
+            </button>
             {games.length > 0 && (
                 <div className="discovery-navigation">
                     <button onClick={handlePrevious} className="navigation-button">&lt;</button>
-                        <div className='game-card-wrapper'>
-                            <GameCard game={games[currentIndex]} />
-                        </div>
+                    <div className='game-card-wrapper'>
+                        <GameCard game={games[currentIndex]} />
+                    </div>
                     <button onClick={handleNext} className='navigation-button'>&gt;</button>
                 </div>
             )}

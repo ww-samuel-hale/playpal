@@ -71,4 +71,44 @@
 .game-card p strong {
     font-weight: bold; /* Make field names bold */
 }
+
+.summary-container {
+    display: flex; /* Use flex to layout the summary and button */
+    flex-direction: column;
+    align-items: flex-start; /* Align items to the left */
+    gap: 5px; /* Add space between summary text and button */
+    margin: 5px 0; /* Add margin to the container */
+}
+
+.summary-text, .summary-toggle {
+    /* Combine styles to apply to both text and toggle for consistency */
+    display: block; /* Display as block to ensure full-width for wrapping */
+    margin: 2px 0; /* Provide spacing around text and button */
+}
+
+.summary-toggle {
+    color: #007bff; /* Link color */
+    cursor: pointer; /* The hand cursor */
+    text-decoration: underline; /* Underline to make it look clickable */
+    font-size: 0.9em; /* Slightly smaller font size than the surrounding text */
+    margin-top: 8px; /* Space from the summary text */
+    font-weight: 500; /* Medium font weight */
+    transition: color 0.3s ease; /* Smooth color transition for hover effect */
+  }
+  
+  .summary-toggle:hover, .summary-toggle:focus {
+    color: #0056b3; /* Darker color on hover/focus */
+    outline: none; /* Remove focus outline */
+  }
+  
+  /* Ensure the button is easy to click */
+  .summary-toggle {
+    padding: 4px;
+    border-radius: 3px; /* Optional: rounded corners for the clickable area */
+  }
+  
+  /* Optional: add a background color on hover to increase visibility */
+  .summary-toggle:hover {
+    background-color: rgba(0, 117, 255, 0.1); /* Light blue background on hover */
+  }
   
