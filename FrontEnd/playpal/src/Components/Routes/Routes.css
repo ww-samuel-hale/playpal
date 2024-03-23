@@ -1,0 +1,36 @@
+.router-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; /* Full height of the viewport */
+    padding: 20px;
+    background-color: #f0f0f0; /* Light grey background */
+}
+
+/* Additional styling for links, if you have a navigation menu */
+.nav-links {
+    display: flex;
+    justify-content: space-around;
+    list-style: none;
+    padding: 10px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-links a:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+/* Styling for active link - if you use NavLink */
+.nav-links .active {
+    background-color: #0056b3;
+    color: #fff;
+}

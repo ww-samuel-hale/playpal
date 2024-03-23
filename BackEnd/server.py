@@ -4,16 +4,34 @@ from sqlalchemy import text
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 import os
+import requests
+import json
 from models import User, db
+from igdb.wrapper import IGDBWrapper
 
 load_dotenv()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 db.init_app(app)
 
 bcrypt = Bcrypt(app)
+
+# Send a POST request to https://id.twitch.tv/oauth2/token providing it the CLIENT ID and CLIENT SECRET
+auth = requests.post(
+    'https://id.twitch.tv/oauth2/token',
+    params={
+        'client_id': os.getenv('IGDB_CLIENT_ID'),
+        'client_secret': os.getenv('IGDB_CLIENT_SECRET'),
+        'grant_type': 'client_credentials'
+    })
+
+# Get the access token from the response
+access_token = auth.json()['access_token']
+
+# Authenticate with the IGDB API
+wrapper = IGDBWrapper(os.getenv('IGDB_CLIENT_ID'), access_token)
 
 ### TEST API ENDPOINTS ###
 @app.route('/api/test_db', methods=['GET'])
@@ -69,6 +87,47 @@ def login():
     else:
         # Authentication failed
         return jsonify(message="Invalid username or password"), 401
+    
+### IGDB API ENDPOINTS ###
+# Get Games
+@app.route('/api/games', methods=['GET'])
+def get_games():
+    games_array = wrapper.api_request(
+            'games',
+            'fields id, name; offset 0; where platforms=48;'
+          )
+    
+    games = json.loads(games_array)
+    
+    return jsonify(games), 200
+
+
+# Generate game recommendation card
+@app.route('/api/recommendation', methods=['GET'])
+def get_recommendation():
+    recommendation_array = wrapper.api_request(
+            'games',
+            'fields id, name, cover.url, genres.name, platforms.name, rating, summary; where rating > 80; limit 10;'
+          )
+    
+    recommendations = json.loads(recommendation_array)
+
+    for recommendation in recommendations:
+        # Round off the rating to a whole number
+        recommendation['rating'] = round(recommendation['rating'])
+
+        # modify recommendation to include cover url
+        if len(recommendation['cover']['url']) > 0:
+            recommendation['cover'] = recommendation['cover']['url']
+        else:
+            recommendation['cover'] = '../FrontEnd/public/logo192.png'
+
+        recommendation['genres'] = [genre['name'] for genre in recommendation['genres']]
+
+        recommendation['platforms'] = [platform['name'] for platform in recommendation['platforms']]
+    
+    return jsonify(recommendations), 200    
+    
 
 if __name__ == '__main__':
     app.run(debug=True)

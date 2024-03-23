@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './NavBar.css';
 import { post } from '../../Utilities/api-utility';
+import { NavLink, Link } from 'react-router-dom';
 
 const NavBar = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -34,7 +35,7 @@ const NavBar = () => {
         const username = event.target.username.value;
         const password = event.target.password.value;
         try {
-            const response = await post('/login', { username, password });
+            await post('/login', { username, password });
             setIsLoggedIn(true);
             setShowLoginForm(false);
             setLoginError('');
@@ -51,7 +52,7 @@ const NavBar = () => {
         const password = event.target.password.value;
         const email = event.target.email.value;
         try {
-            const response = await post('/register', { username, email, password });
+            await post('/register', { username, email, password });
             setShowRegisterForm(false);
             setRegisterError('');
         } catch (error) {
@@ -62,8 +63,11 @@ const NavBar = () => {
 
     return (
         <nav className="navbar">
-            <div className="navbar-logo">PlayPal</div>
+            <Link to ="/" className="navbar-logo">
+                <div>PlayPal</div>
+            </Link>
             <div className="navbar-menu">
+                <NavLink to ="/discovery">Discover</NavLink>
                 <button onClick={handleLoginClick}>{isLoggedIn ? 'Logout' : 'Log In'}</button>
                 {!isLoggedIn && <button onClick={handleRegister}>Register</button>}
             </div>
