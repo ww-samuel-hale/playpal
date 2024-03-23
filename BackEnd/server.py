@@ -4,7 +4,10 @@ from sqlalchemy import text
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 import os
+import requests
+import json
 from models import User, db
+from igdb.wrapper import IGDBWrapper
 
 load_dotenv()
 app = Flask(__name__)
@@ -14,6 +17,21 @@ CORS(app)
 db.init_app(app)
 
 bcrypt = Bcrypt(app)
+
+# Send a POST request to https://id.twitch.tv/oauth2/token providing it the CLIENT ID and CLIENT SECRET
+auth = requests.post(
+    'https://id.twitch.tv/oauth2/token',
+    params={
+        'client_id': os.getenv('IGDB_CLIENT_ID'),
+        'client_secret': os.getenv('IGDB_CLIENT_SECRET'),
+        'grant_type': 'client_credentials'
+    })
+
+# Get the access token from the response
+access_token = auth.json()['access_token']
+
+# Authenticate with the IGDB API
+wrapper = IGDBWrapper(os.getenv('IGDB_CLIENT_ID'), access_token)
 
 ### TEST API ENDPOINTS ###
 @app.route('/api/test_db', methods=['GET'])
@@ -69,6 +87,69 @@ def login():
     else:
         # Authentication failed
         return jsonify(message="Invalid username or password"), 401
+    
+### IGDB API ENDPOINTS ###
+# Get Games
+@app.route('/api/games', methods=['GET'])
+def get_games():
+    games_array = wrapper.api_request(
+            'games',
+            'fields id, name; offset 0; where platforms=48;'
+          )
+    
+    games = json.loads(games_array)
+    
+    return jsonify(games), 200
+
+
+# Generate game recommendation card
+@app.route('/api/recommendation', methods=['GET'])
+def get_recommendation():
+    recommendation_array = wrapper.api_request(
+            'games',
+            'fields id, name, cover, genres, platforms, rating, summary; search "Fallout: New Vegas"; limit 1;'
+          )
+    
+    recommendation = json.loads(recommendation_array)
+    
+    # Round off the rating to a whole number
+    recommendation[0]['rating'] = round(recommendation[0]['rating'])
+    
+    game_cover_array = wrapper.api_request(
+            'artworks',
+            'fields url; where game = ' + str(recommendation[0]['id']) + '; limit 1;'
+    )
+    
+    game_cover = json.loads(game_cover_array)
+    
+    # modify recommendation to inlcude cover url
+    if (len(game_cover) > 0):
+        recommendation[0]['cover'] = game_cover[0]['url']
+    else:
+        recommendation[0]['cover'] = '../FrontEnd/public/logo192.png'
+        
+    # Convert genres array from genre id's to genre names
+    genres_array = wrapper.api_request(
+            'genres',
+            'fields name; where id = (' + ', '.join(str(genre_id) for genre_id in recommendation[0]['genres']) + ');'
+          )
+    
+    genres = json.loads(genres_array)
+    
+    recommendation[0]['genres'] = [genre['name'] for genre in genres]
+    
+    # Modify platforms array from platform id's to platform names
+    platforms_array = wrapper.api_request(
+            'platforms',
+            'fields name; where id = (' + ', '.join(str(platform_id) for platform_id in recommendation[0]['platforms']) + ');'
+          )
+    
+    platforms = json.loads(platforms_array)
+    
+    recommendation[0]['platforms'] = [platform['name'] for platform in platforms]
+    
+    return jsonify(recommendation), 200    
+    
 
 if __name__ == '__main__':
     app.run(debug=True)
