@@ -34,7 +34,7 @@ const NavBar = () => {
         const username = event.target.username.value;
         const password = event.target.password.value;
         try {
-            const response = await post('/login', { username, password });
+            await post('/login', { username, password });
             setIsLoggedIn(true);
             setShowLoginForm(false);
             setLoginError('');
@@ -51,7 +51,7 @@ const NavBar = () => {
         const password = event.target.password.value;
         const email = event.target.email.value;
         try {
-            const response = await post('/register', { username, email, password });
+            await post('/register', { username, email, password });
             setShowRegisterForm(false);
             setRegisterError('');
         } catch (error) {
