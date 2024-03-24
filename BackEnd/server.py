@@ -8,6 +8,7 @@ import requests
 import json
 from models import User, db
 from igdb.wrapper import IGDBWrapper
+import time
 
 load_dotenv()
 app = Flask(__name__)
@@ -107,7 +108,7 @@ def get_games():
 def get_recommendation():
     recommendation_array = wrapper.api_request(
             'games',
-            'fields id, name, cover.url, genres.name, platforms.name, rating, summary; where rating > 80; limit 10;'
+            'fields id, name, cover.url, genres.name, platforms.name, rating, summary; where rating > 80; limit 100;'
           )
     
     recommendations = json.loads(recommendation_array)
@@ -116,18 +117,84 @@ def get_recommendation():
         # Round off the rating to a whole number
         recommendation['rating'] = round(recommendation['rating'])
 
-        # modify recommendation to include cover url
-        if len(recommendation['cover']['url']) > 0:
+        # Modify recommendation to include cover url
+        if 'cover' in recommendation and 'url' in recommendation['cover']:
             recommendation['cover'] = recommendation['cover']['url']
         else:
             recommendation['cover'] = '../FrontEnd/public/logo192.png'
 
-        recommendation['genres'] = [genre['name'] for genre in recommendation['genres']]
+        # Check if genres exist and extract their names
+        if 'genres' in recommendation:
+            recommendation['genres'] = [genre['name'] for genre in recommendation['genres']]
+        else:
+            recommendation['genres'] = []
 
-        recommendation['platforms'] = [platform['name'] for platform in recommendation['platforms']]
+        # Check if platforms exist and extract their names
+        if 'platforms' in recommendation:
+            recommendation['platforms'] = [platform['name'] for platform in recommendation['platforms']]
+        else:
+            recommendation['platforms'] = []
+            
+        if 'summary' not in recommendation:
+            recommendation['summary'] = 'No summary available.'
     
     return jsonify(recommendations), 200    
     
+# Need to add a route to get all the options for our query filter drop downs that the front end will use
+# to allow users to filter the games they see
+@app.route('/api/filter_options', methods=['GET'])
+def get_filter_options():
+    # Get the genres
+    genres = get_all_entries('genres', 'name')
+
+    # Get the platforms
+    platforms = get_all_entries('platforms', 'name')
+
+    # Get the game modes
+    game_modes = get_all_entries('game_modes', 'name')
+
+    # Get the player perspectives
+    player_perspectives = get_all_entries('player_perspectives', 'name')
+
+    # Get the themes
+    themes = get_all_entries('themes', 'name')
+
+    # Get the companies
+    companies = get_all_entries('companies', 'name')
+
+    # Get the game engines
+    game_engines = get_all_entries('game_engines', 'name')
+
+    # Get the languages
+    languages = get_all_entries('languages', 'name')
+
+    return jsonify({
+        'genres': genres,
+        'platforms': platforms,
+        'game_modes': game_modes,
+        'player_perspectives': player_perspectives,
+        'themes': themes,
+        'companies': companies,
+        'game_engines': game_engines,
+        'languages': languages
+    }), 200
+
+def get_all_entries(category, field):
+    entries = []
+    offset = 0
+    limit = 500
+    while True:
+        response = wrapper.api_request(
+            category,
+            f'fields {field}; offset {offset}; limit {limit};'
+        )
+        data = json.loads(response)
+        entries.extend(data)
+        if len(data) < limit:
+            break
+        offset += limit
+        time.sleep(0.25)
+    return [entry[field] for entry in entries]
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Discovery from '../Discovery/Discovery';
 import Home from '../Home/Home';
+import Filters from '../Filters/Filters';
 
 function RoutePages() {
     return (
@@ -9,6 +10,7 @@ function RoutePages() {
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/discovery" element={<Discovery />} />
+                <Route path="/filters" element={<Filters />} />
             </Routes>
         </div>
     );

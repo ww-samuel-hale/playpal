@@ -68,6 +68,7 @@ const NavBar = () => {
             </Link>
             <div className="navbar-menu">
                 <NavLink to ="/discovery">Discover</NavLink>
+                <NavLink to ="/filters">Filters</NavLink>
                 <button onClick={handleLoginClick}>{isLoggedIn ? 'Logout' : 'Log In'}</button>
                 {!isLoggedIn && <button onClick={handleRegister}>Register</button>}
             </div>
