@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Select from 'react-select'; 
 import './Filters.css';
 
-
+// Helper function to format options for the Select component
 function formatOptionsForSelect(optionsArray) {
     return optionsArray.map(option => ({
         value: option.toLowerCase().replace(/[\s\W-]+/g, '-'), // Replace spaces and non-word characters with a dash
@@ -10,7 +10,19 @@ function formatOptionsForSelect(optionsArray) {
     }));
 }
 
+// Mapping for age ratings
+const age_ratings_mapping = {
+    6: 'RP',
+    7: 'EC',
+    8: 'E',
+    9: 'E10',
+    10: 'T',
+    11: 'M',
+    12: 'AO'
+};
+
 const Filters = () => {
+    // State hooks for each filter category
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedPlatforms, setSelectedPlatforms] = useState([]);
     const [selectedGameModes, setSelectedGameModes] = useState([]);
@@ -21,56 +33,52 @@ const Filters = () => {
     const [selectedAgeRatings, setSelectedAgeRatings] = useState([]);
     const [selectedGameEngines, setSelectedGameEngines] = useState([]);
     const [selectedLanguages, setSelectedLanguages] = useState([]);
-    const genresOptions = formatOptionsForSelect(require('./Options.json').genres);
-    const platformsOptions = formatOptionsForSelect(require('./Options.json').platforms);
-    const gameModesOptions = formatOptionsForSelect(require('./Options.json').game_modes);
-    const playerPerspectivesOptions = formatOptionsForSelect(require ('./Options.json').player_perspectives);
-    const themesOptions = formatOptionsForSelect(require('./Options.json').themes);
-    const releaseDateOptions = [];
-    const ageRatingsOptions = [];
-    const gameEnginesOptions = formatOptionsForSelect(require('./Options.json').game_engines);
-    const languagesOptions = formatOptionsForSelect(require('./Options.json').languages);
 
-    // Handle selection change for each dropdown
-    const handleGenreChange = (selectedOptions) => {
-        setSelectedGenres(selectedOptions);
+    // Options loaded from JSON files
+    const genresOptions = formatOptionsForSelect(require('./Options.json').genres).sort((a, b) => a.label.localeCompare(b.label));
+    const platformsOptions = formatOptionsForSelect(require('./Options.json').platforms).sort((a, b) => a.label.localeCompare(b.label));
+    const gameModesOptions = formatOptionsForSelect(require('./Options.json').game_modes).sort((a, b) => a.label.localeCompare(b.label));
+    const playerPerspectivesOptions = formatOptionsForSelect(require('./Options.json').player_perspectives).sort((a, b) => a.label.localeCompare(b.label));
+    const themesOptions = formatOptionsForSelect(require('./Options.json').themes).sort((a, b) => a.label.localeCompare(b.label));
+    const ageRatingsOptions = formatOptionsForSelect(Object.values(age_ratings_mapping)).sort((a, b) => a.label.localeCompare(b.label));
+    const gameEnginesOptions = formatOptionsForSelect(require('./Options.json').game_engines).sort((a, b) => a.label.localeCompare(b.label));
+    const languagesOptions = formatOptionsForSelect(require('./Options.json').languages).sort((a, b) => a.label.localeCompare(b.label));
+
+    // Generating options for release date filters
+    const years = Array.from({length: new Date().getFullYear() - 1990}, (_, i) => 1990 + i).reverse();
+    const months = Array.from({length: 12}, (_, i) => new Date(0, i).toLocaleString('en-US', {month: 'long'}));
+    const releaseDateOptions = [
+        ...years.map(year => ({ value: `before-${year}`, label: `Before ${year}` })),
+        ...years.map(year => ({ value: `after-${year}`, label: `After ${year}` })),
+        ...months.map(month => ({ value: `before-${month}`, label: `Before ${month}` })),
+        ...months.map(month => ({ value: `after-${month}`, label: `After ${month}` })),
+    ].sort((a, b) => a.label.localeCompare(b.label));
+
+    // Handlers for selection changes in each Select component
+    const handleGenreChange = (selectedOptions) => setSelectedGenres(selectedOptions);
+    const handlePlatformChange = (selectedOptions) => setSelectedPlatforms(selectedOptions);
+    const handleGameModeChange = (selectedOptions) => setSelectedGameModes(selectedOptions);
+    const handlePlayerPerspectiveChange = (selectedOptions) => setSelectedPlayerPerspectives(selectedOptions);
+    const handleThemeChange = (selectedOptions) => setSelectedThemes(selectedOptions);
+    const handleReleaseDateChange = (selectedOptions) => setSelectedReleaseDate(selectedOptions);
+    const handleAgeRatingChange = (selectedOptions) => setSelectedAgeRatings(selectedOptions);
+    const handleGameEngineChange = (selectedOptions) => setSelectedGameEngines(selectedOptions);
+    const handleLanguageChange = (selectedOptions) => setSelectedLanguages(selectedOptions);
+    // Function to handle saving the filters
+    const handleSaveFilters = async () => {
+        const filters = {
+            genres: selectedGenres,
+            platforms: selectedPlatforms,
+            gameModes: selectedGameModes,
+            playerPerspectives: selectedPlayerPerspectives,
+            themes: selectedThemes,
+            releaseDate: selectedReleaseDate,
+            ageRatings: selectedAgeRatings,
+            gameEngines: selectedGameEngines,
+            languages: selectedLanguages,
+        };
     };
 
-    const handlePlatformChange = (selectedOptions) => {
-        setSelectedPlatforms(selectedOptions);
-    };
-
-    const handleGameModeChange = (selectedOptions) => {
-        setSelectedGameModes(selectedOptions);
-    };
-
-    const handlePlayerPerspectiveChange = (selectedOptions) => {
-        setSelectedPlayerPerspectives(selectedOptions);
-    };
-
-    const handleThemeChange = (selectedOptions) => {
-        setSelectedThemes(selectedOptions);
-    };
-
-    const handleReleaseDateChange = (selectedOptions) => {
-        setSelectedReleaseDate(selectedOptions);
-    };
-
-    const handleCompanyChange = (selectedOptions) => {
-        setSelectedCompanys(selectedOptions);
-    };
-
-    const handleAgeRatingChange = (selectedOptions) => {
-        setSelectedAgeRatings(selectedOptions);
-    };
-
-    const handleGameEngineChange = (selectedOptions) => {
-        setSelectedGameEngines(selectedOptions);
-    };
-
-    const handleLanguageChange = (selectedOptions) => {
-        setSelectedLanguages(selectedOptions);
-    };
 
     return (
         <div className='filters-container'>
@@ -137,6 +145,7 @@ const Filters = () => {
                         options={releaseDateOptions}
                         onChange={handleReleaseDateChange}
                         value={selectedReleaseDate}
+                        isClearable={true}
                     />
                 </div>
             </div>
@@ -173,6 +182,9 @@ const Filters = () => {
                     />
                 </div>
             </div>
+            <button className="save-filters-button" onClick={handleSaveFilters}>
+                Save Filters
+            </button>
         </div>
     );
 };
