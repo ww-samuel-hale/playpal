@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import Select from 'react-select'; 
+import { post } from '../../Utilities/api-utility'
 import './Filters.css';
 
 // Helper function to format options for the Select component
 function formatOptionsForSelect(optionsArray) {
     return optionsArray.map(option => ({
-        value: option.toLowerCase().replace(/[\s\W-]+/g, '-'), // Replace spaces and non-word characters with a dash
-        label: option // Keep the original string as the label
+        value: typeof option === 'number' ? option.toString() : option.toLowerCase().replace(/[\s\W-]+/g, '-'), // Convert numbers to string and replace spaces and non-word characters with a dash
+        label: option // Keep the original value as the label
     }));
 }
 
@@ -21,6 +22,28 @@ const age_ratings_mapping = {
     12: 'AO'
 };
 
+const comparisonOptions = [
+    { value: 'gt', label: '>' },
+    { value: 'eq', label: '=' },
+    { value: 'lt', label: '<' }
+];
+
+const ComparisonButtons = ({ selected, onSelect }) => {
+    return (
+        <div className="comparison-buttons">
+            {comparisonOptions.map(option => (
+                <button
+                    key={option.value}
+                    className={`comparison-button ${selected === option.value ? 'active' : ''}`}
+                    onClick={() => onSelect(option.value)}
+                >
+                    {option.label}
+                </button>
+            ))}
+        </div>
+    );
+};
+
 const Filters = () => {
     // State hooks for each filter category
     const [selectedGenres, setSelectedGenres] = useState([]);
@@ -33,6 +56,8 @@ const Filters = () => {
     const [selectedAgeRatings, setSelectedAgeRatings] = useState([]);
     const [selectedGameEngines, setSelectedGameEngines] = useState([]);
     const [selectedLanguages, setSelectedLanguages] = useState([]);
+    const [selectedRating, setSelectedRating] = useState([]);
+    const [selectedRatingComparison, setSelectedRatingComparison] = useState('eq'); // Default to 'equal'
 
     // Options loaded from JSON files
     const genresOptions = formatOptionsForSelect(require('./Options.json').genres).sort((a, b) => a.label.localeCompare(b.label));
@@ -43,6 +68,8 @@ const Filters = () => {
     const ageRatingsOptions = formatOptionsForSelect(Object.values(age_ratings_mapping)).sort((a, b) => a.label.localeCompare(b.label));
     const gameEnginesOptions = formatOptionsForSelect(require('./Options.json').game_engines).sort((a, b) => a.label.localeCompare(b.label));
     const languagesOptions = formatOptionsForSelect(require('./Options.json').languages).sort((a, b) => a.label.localeCompare(b.label));
+    // ratingOptions are 1 - 100 (integers)
+    const ratingOptions = formatOptionsForSelect(Array.from({length: 100}, (_, i) => i + 1))
 
     // Generating options for release date filters
     const years = Array.from({length: new Date().getFullYear() - 1990}, (_, i) => 1990 + i).reverse();
@@ -64,19 +91,40 @@ const Filters = () => {
     const handleAgeRatingChange = (selectedOptions) => setSelectedAgeRatings(selectedOptions);
     const handleGameEngineChange = (selectedOptions) => setSelectedGameEngines(selectedOptions);
     const handleLanguageChange = (selectedOptions) => setSelectedLanguages(selectedOptions);
+    const handleRatingChange = (selectedOptions) => setSelectedRating(selectedOptions);
+
     // Function to handle saving the filters
     const handleSaveFilters = async () => {
         const filters = {
-            genres: selectedGenres,
-            platforms: selectedPlatforms,
-            gameModes: selectedGameModes,
-            playerPerspectives: selectedPlayerPerspectives,
-            themes: selectedThemes,
-            releaseDate: selectedReleaseDate,
-            ageRatings: selectedAgeRatings,
-            gameEngines: selectedGameEngines,
-            languages: selectedLanguages,
+            genres: selectedGenres.map(option => option.label),
+            platforms: selectedPlatforms.map(option => option.label),
+            gameModes: selectedGameModes.map(option => option.label),
+            playerPerspectives: selectedPlayerPerspectives.map(option => option.label),
+            themes: selectedThemes.map(option => option.label),
+            releaseDate: selectedReleaseDate.map(option => option.label),
+            ageRatings: selectedAgeRatings.map(option => {
+                const key = Object.keys(age_ratings_mapping).find(key => age_ratings_mapping[key] === option.label);
+                return key ? parseInt(key) : null;
+            }),
+            gameEngines: selectedGameEngines.map(option => option.label),
+            languages: selectedLanguages.map(option => option.label),
+            rating: `${comparisonOptions.find(option => option.value === selectedRatingComparison).label} ${selectedRating.label}`,
         };
+
+        try {
+            
+
+            const response = await post('/recommendation', filters);
+    
+            if (response.ok) {
+                const games = await response.json();
+                console.log('Filtered games:', games);
+            } else {
+                console.error('Failed to fetch filtered games');
+            }
+        } catch (error) {
+            console.error('Error fetching filtered games:', error);
+        }
     };
 
 
@@ -180,6 +228,22 @@ const Filters = () => {
                         onChange={handleLanguageChange}
                         value={selectedLanguages}
                     />
+                </div>
+            </div>
+            <div className="filters-group">
+                <label className='filter-label'>Rating:</label>
+                <div className='filter-rating-container'>
+                    <ComparisonButtons
+                        selected={selectedRatingComparison}
+                        onSelect={setSelectedRatingComparison}
+                    />
+                    <div className='react-select-container'>
+                        <Select
+                            options={ratingOptions}
+                            onChange={handleRatingChange}
+                            value={selectedRating}
+                        />
+                    </div>
                 </div>
             </div>
             <button className="save-filters-button" onClick={handleSaveFilters}>

@@ -34,6 +34,77 @@ access_token = auth.json()['access_token']
 # Authenticate with the IGDB API
 wrapper = IGDBWrapper(os.getenv('IGDB_CLIENT_ID'), access_token)
 
+### FUNCTIONS ###
+# Example Object
+# filters = {
+#     ageRatings: ['E']
+#     gameEngines: ['Unreal']
+#     gameModes: ['Battle Royale']
+#     genres: (2) ['Arcade', 'Card & Board Game']
+#     languages: ['English']
+#     platforms: ['PC (Microsoft Windows)']
+#     playerPerspectives: ['First person']
+#     releaseDate: (2) ['After 1990', 'Before July']
+#     themes: ['Action']
+# }
+def construct_query(filters):
+    query_parts = []
+
+    if 'genres' in filters and filters['genres']:
+        genres_query = ','.join([f'"{genre}"' for genre in filters['genres']])
+        query_parts.append(f"genres.name = ({genres_query})")
+
+    if 'platforms' in filters and filters['platforms']:
+        platforms_query = ','.join([f'"{platform}"' for platform in filters['platforms']])
+        query_parts.append(f"platforms.name = ({platforms_query})")
+
+    if 'themes' in filters and filters['themes']:
+        themes_query = ','.join([f'"{theme}"' for theme in filters['themes']])
+        query_parts.append(f"themes.name = ({themes_query})")
+    
+    if 'gameModes' in filters and filters['gameModes']:
+        gameModes_query = ','.join([f'"{gameMode}"' for gameMode in filters['gameModes']])
+        query_parts.append(f"game_modes.name = ({gameModes_query})")
+        
+    if 'playerPerspectives' in filters and filters['playerPerspectives']:
+        playerPerspectives_query = ','.join([f'"{playerPerspective}"' for playerPerspective in filters['playerPerspectives']])
+        query_parts.append(f"player_perspectives.name = ({playerPerspectives_query})")
+        
+    if 'gameEngines' in filters and filters['gameEngines']:
+        gameEngines_query = ','.join([f'"{gameEngine}"' for gameEngine in filters['gameEngines']])
+        query_parts.append(f"game_engines.name = ({gameEngines_query})")
+        
+    if 'languages' in filters and filters['languages']:
+        languages_query = ','.join([f'"{language}"' for language in filters['languages']])
+        query_parts.append(f"language_supports.language.name = ({languages_query})")
+        
+    if 'ageRatings' in filters and filters['ageRatings']:
+        ageRatings_query = ','.join([f'{ageRating}' for ageRating in filters['ageRatings']])
+        query_parts.append(f"age_ratings.rating = ({ageRatings_query})")
+        
+    if 'releaseDate' in filters and filters['releaseDate']:
+        for releaseDate in filters['releaseDate']:
+            operator = ">" if releaseDate.startswith("After") else "<"
+            value = releaseDate[6:] if releaseDate.startswith("After") else releaseDate[7:]
+            if value.isdigit():  # it's a year
+                query_parts.append(f"release_dates.y {operator} {value}")
+            elif value in ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']:  # it's a month
+                month_number = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].index(value) + 1
+                query_parts.append(f"release_dates.m {operator} {month_number}")
+                
+    if 'rating' in filters and filters['rating']:
+        query_parts.append(f"rating {filters['rating']}")
+
+    # Join all parts of the query
+    if query_parts:
+        where_clause = 'where ' + ' & '.join(query_parts) + ';'
+    else:
+        where_clause = ''
+
+    # Construct the full query
+    query = f"fields id, name, cover.url, genres.name, platforms.name, rating, summary; {where_clause} limit 100;"
+    return query
+
 ### TEST API ENDPOINTS ###
 @app.route('/api/test_db', methods=['GET'])
 def test_db():
@@ -104,12 +175,11 @@ def get_games():
 
 
 # Generate game recommendation card
-@app.route('/api/recommendation', methods=['GET'])
+@app.route('/api/recommendation', methods=['POST'])
 def get_recommendation():
-    recommendation_array = wrapper.api_request(
-            'games',
-            'fields id, name, cover.url, genres.name, platforms.name, rating, summary; where rating > 80; limit 100;'
-          )
+    filters = request.json
+    query = construct_query(filters)
+    recommendation_array = wrapper.api_request('games', query)
     
     recommendations = json.loads(recommendation_array)
 
@@ -139,62 +209,8 @@ def get_recommendation():
             recommendation['summary'] = 'No summary available.'
     
     return jsonify(recommendations), 200    
-    
-# Need to add a route to get all the options for our query filter drop downs that the front end will use
-# to allow users to filter the games they see
-@app.route('/api/filter_options', methods=['GET'])
-def get_filter_options():
-    # Get the genres
-    genres = get_all_entries('genres', 'name')
 
-    # Get the platforms
-    platforms = get_all_entries('platforms', 'name')
 
-    # Get the game modes
-    game_modes = get_all_entries('game_modes', 'name')
-
-    # Get the player perspectives
-    player_perspectives = get_all_entries('player_perspectives', 'name')
-
-    # Get the themes
-    themes = get_all_entries('themes', 'name')
-
-    # Get the companies
-    companies = get_all_entries('companies', 'name')
-
-    # Get the game engines
-    game_engines = get_all_entries('game_engines', 'name')
-
-    # Get the languages
-    languages = get_all_entries('languages', 'name')
-
-    return jsonify({
-        'genres': genres,
-        'platforms': platforms,
-        'game_modes': game_modes,
-        'player_perspectives': player_perspectives,
-        'themes': themes,
-        'companies': companies,
-        'game_engines': game_engines,
-        'languages': languages
-    }), 200
-
-def get_all_entries(category, field):
-    entries = []
-    offset = 0
-    limit = 500
-    while True:
-        response = wrapper.api_request(
-            category,
-            f'fields {field}; offset {offset}; limit {limit};'
-        )
-        data = json.loads(response)
-        entries.extend(data)
-        if len(data) < limit:
-            break
-        offset += limit
-        time.sleep(0.25)
-    return [entry[field] for entry in entries]
 
 if __name__ == '__main__':
     app.run(debug=True)

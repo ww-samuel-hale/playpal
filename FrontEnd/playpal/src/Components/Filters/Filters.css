@@ -25,6 +25,7 @@
 }
 
 .react-select-container {
+    flex-grow: 1; /* Allow the Select component to take up remaining space */
     flex-basis: 75%;
     min-width: 250px;
 }
@@ -89,4 +90,35 @@
 .save-filters-button:focus,
 .save-filters-button:active {
     box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.5);
+}
+
+.comparison-buttons {
+    display: inline-flex;
+    margin-left: 10px; /* Adjust as necessary */
+}
+
+.comparison-button {
+    border: none;
+    background-color: #f0f0f0;
+    margin-right: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    outline: none;
+}
+
+.comparison-button.active {
+    background-color: #007bff;
+    color: white;
+}
+
+
+.comparison-buttons {
+    display: flex;
+    margin-left: 10px; /* Adjust as necessary */
+    /* Add any additional styling needed to align with the design */
+}
+
+.filter-rating-container {
+    display: flex;
+    align-items: center;
 }
