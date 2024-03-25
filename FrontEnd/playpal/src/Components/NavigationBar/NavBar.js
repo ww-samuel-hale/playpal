@@ -1,21 +1,24 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import './NavBar.css';
 import { post } from '../../Utilities/api-utility';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
+import MyContext from '../../Context/Context';
 
 const NavBar = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const { user, login, logout } = useContext(MyContext);
     const [showLoginForm, setShowLoginForm] = useState(false);
     const [showRegisterForm, setShowRegisterForm] = useState(false);
     const [loginError, setLoginError] = useState('');
     const [registerError, setRegisterError] = useState('');
+    const navigate = useNavigate();
 
-    const handleLogout = () => {
-        setIsLoggedIn(false);
+    function handleLogout() {
+        logout();
+        navigate('/');
     };
 
     const handleLoginClick = () => {
-        if (isLoggedIn) {
+        if (user) {
             handleLogout();
         } else {
             setShowLoginForm(!showLoginForm);
@@ -35,8 +38,8 @@ const NavBar = () => {
         const username = event.target.username.value;
         const password = event.target.password.value;
         try {
-            await post('/login', { username, password });
-            setIsLoggedIn(true);
+            const response = await post('/login', { username, password });
+            login(response.username);
             setShowLoginForm(false);
             setLoginError('');
         } catch (error) {
@@ -67,10 +70,10 @@ const NavBar = () => {
                 <div>PlayPal</div>
             </Link>
             <div className="navbar-menu">
-                <NavLink to ="/discovery">Discover</NavLink>
-                <NavLink to ="/filters">Filters</NavLink>
-                <button onClick={handleLoginClick}>{isLoggedIn ? 'Logout' : 'Log In'}</button>
-                {!isLoggedIn && <button onClick={handleRegister}>Register</button>}
+                {user && <NavLink to ="/discovery">Discover</NavLink>}
+                {user && <NavLink to ="/filters">Filters</NavLink>}
+                <button onClick={handleLoginClick}>{user ? 'Logout' : 'Log In'}</button>
+                {!user && <button onClick={handleRegister}>Sign up</button>}
             </div>
             {showLoginForm && (
                 <div className="login-form-container">
@@ -88,7 +91,7 @@ const NavBar = () => {
                         <input type="text" placeholder="Username" name="username" required />
                         <input type="email" placeholder="Email" name="email" required />
                         <input type="password" placeholder="Password" name="password" required />
-                        <button type="submit">Register</button>
+                        <button type="submit">Sign Up</button>
                         {registerError && <div className="error-message">{registerError}</div>}
                     </form>
                 </div>

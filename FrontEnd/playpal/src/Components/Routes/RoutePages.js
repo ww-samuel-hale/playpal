@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Discovery from '../Discovery/Discovery';
 import Home from '../Home/Home';
 import Filters from '../Filters/Filters';
@@ -9,8 +9,8 @@ function RoutePages() {
         <div className="router-content">
             <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/discovery" element={<Discovery />} />
-                <Route path="/filters" element={<Filters />} />
+                <Route path="/discovery" element={<Discovery />}/>
+                <Route path="/filters" element={<Filters />}/>
             </Routes>
         </div>
     );
