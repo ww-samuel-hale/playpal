@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext} from 'react';
 import GameCard from '../GameCard/GameCard';
 import './Discovery.css';
-import { get } from '../../Utilities/api-utility';
+import { post } from '../../Utilities/api-utility';
+import MyContext from '../../Context/Context';
 
 const Discovery = () => {
+    const { user } = useContext(MyContext);
     const [games, setGames] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(false); // Loading state
@@ -11,7 +13,7 @@ const Discovery = () => {
     const handleGenerateRecommendations = async () => {
         setIsLoading(true); // Start loading
         try {
-            const recommendations = await get('/recommendation');
+            const recommendations = await post('/recommendation', { user_id: user.user_id });
             setGames(recommendations);
         } catch (error) {
             console.error('Failed to fetch recommendations:', error);

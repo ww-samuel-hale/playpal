@@ -1,0 +1,125 @@
+/* Filters.css */
+.filters-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filters-group {
+    display: flex;
+    flex-wrap: wrap; /* Allow items to wrap to the next line */
+    align-items: center; /* Align items vertically */
+    margin-bottom: 20px;
+}
+
+.filter-label {
+    font-size: 16px;
+    color: #333;
+    flex-basis: 20%;
+    min-width: 120px; /* Minimum width for the label */
+    text-align: right; /* Align label to the right */
+    padding-right: 10px;
+}
+
+.react-select-container {
+    flex-grow: 1; /* Allow the Select component to take up remaining space */
+    flex-basis: 75%;
+    min-width: 250px;
+}
+
+/* Customizing the Select component */
+.Select {
+    width: 100%;
+}
+
+
+/* Styling for react-select component */
+/* These class names may need to be adjusted if your actual react-select generated classes are different */
+.css-2b097c-container {
+    font-size: 16px;
+    /* Any additional styling */
+}
+
+.css-yk16xz-control {
+    border: 1px solid #ced4da;
+    min-height: 44px; /* Larger click area */
+}
+
+.css-1wa3eu0-placeholder {
+    color: #6c757d;
+}
+
+.css-1okebmr-indicatorSeparator {
+    background-color: #ced4da;
+}
+
+.css-26l3qy-menu {
+    /* Any additional styling */
+}
+
+/* This may not be needed, it's for the options dropdown menu */
+.css-1n7v3ny-option {
+    padding: 10px 15px; /* More padding for the dropdown items */
+}
+
+/* Adding a clear button for multiple selects */
+.react-select__multi-value__remove {
+    cursor: pointer;
+}
+
+.save-filters-button {
+    background-color: #2c3e50; /* A dark shade for contrast */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    outline: none;
+    margin-left: 5px;
+}
+
+.save-filters-button:hover {
+    background-color: #34495e; /* Slightly lighter shade for hover effect */
+}
+
+/* Optional: Add some styles for when the button is focused or active */
+.save-filters-button:focus,
+.save-filters-button:active {
+    box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.5);
+}
+
+.comparison-buttons {
+    display: inline-flex;
+    margin-left: 10px; /* Adjust as necessary */
+}
+
+.comparison-button {
+    border: none;
+    background-color: #f0f0f0;
+    margin-right: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    outline: none;
+}
+
+.comparison-button.active {
+    background-color: #007bff;
+    color: white;
+}
+
+
+.comparison-buttons {
+    display: flex;
+    margin-left: 10px; /* Adjust as necessary */
+    /* Add any additional styling needed to align with the design */
+}
+
+.filter-rating-container {
+    display: flex;
+    align-items: center;
+}
