@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import Select from 'react-select'; 
-import { post } from '../../Utilities/api-utility'
+import { post, put } from '../../Utilities/api-utility'
 import './Filters.css';
+import MyContext from '../../Context/Context';
 
 // Helper function to format options for the Select component
 function formatOptionsForSelect(optionsArray) {
@@ -45,6 +46,7 @@ const ComparisonButtons = ({ selected, onSelect }) => {
 };
 
 const Filters = () => {
+    const { user } = useContext(MyContext);
     // State hooks for each filter category
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedPlatforms, setSelectedPlatforms] = useState([]);
@@ -93,6 +95,12 @@ const Filters = () => {
     const handleLanguageChange = (selectedOptions) => setSelectedLanguages(selectedOptions);
     const handleRatingChange = (selectedOptions) => setSelectedRating(selectedOptions);
 
+    // Add a clear rating function
+    const clearRating = () => {
+        setSelectedRating(null);
+        setSelectedRatingComparison('eq'); // Reset to default comparison
+    };
+
     // Function to handle saving the filters
     const handleSaveFilters = async () => {
         const filters = {
@@ -108,24 +116,102 @@ const Filters = () => {
             }),
             gameEngines: selectedGameEngines.map(option => option.label),
             languages: selectedLanguages.map(option => option.label),
-            rating: `${comparisonOptions.find(option => option.value === selectedRatingComparison).label} ${selectedRating.label}`,
+            rating: (selectedRating && selectedRating.value != null) ? `${comparisonOptions.find(option => option.value === selectedRatingComparison).label} ${selectedRating.label}` : "",
         };
 
-        try {
-            
+        const save_filters = {
+            genres: selectedGenres.map(option => option.label),
+            platforms: selectedPlatforms.map(option => option.label),
+            game_modes: selectedGameModes.map(option => option.label),
+            player_perspectives: selectedPlayerPerspectives.map(option => option.label),
+            themes: selectedThemes.map(option => option.label),
+            release_date: selectedReleaseDate.map(option => option.label),
+            age_ratings: selectedAgeRatings.map(option => {
+                const key = Object.keys(age_ratings_mapping).find(key => age_ratings_mapping[key] === option.label);
+                return key ? parseInt(key) : null;
+            }),
+            game_engines: selectedGameEngines.map(option => option.label),
+            languages: selectedLanguages.map(option => option.label),
+            rating: selectedRating ? [selectedRating.label] : [],
+            rating_comparison: selectedRating ? [selectedRatingComparison] : [],
+        }
 
-            const response = await post('/recommendation', filters);
+        try {
+            const response = await put('/user_filters', { user_id: user.user_id, filters: save_filters });
+            response = await put('/query', { user_id: user.user_id, filters: filters })
     
-            if (response.ok) {
-                const games = await response.json();
-                console.log('Filtered games:', games);
-            } else {
-                console.error('Failed to fetch filtered games');
-            }
         } catch (error) {
             console.error('Error fetching filtered games:', error);
         }
     };
+
+
+    // {
+    //     "age_ratings": "8",
+    //     "game_engines": "0gf3. gine",
+    //     "game_modes": "Battle Royale",
+    //     "genres": "Adventure",
+    //     "languages": "English",
+    //     "platforms": "1292 Advanced Programmable Video System",
+    //     "player_perspectives": "Auditory",
+    //     "rating": "80",
+    //     "rating_comparison": "gt",
+    //     "release_date": "After July",
+    //     "themes": "4X (explore, expand, exploit, and exterminate)"
+    // }
+    // UseEffect
+    useEffect(() => {
+        const fetchFilters = async () => {
+            try {
+                const response = await post('/user_filters', { user_id: user.user_id });
+                if (response) {
+                    const filters = response;
+                    // Initialize the selected filters based on the user's saved filters
+                    if (filters.genres) {
+                        setSelectedGenres(filters.genres.map(genre => ({ value: genre.toLowerCase().replace(/[\s\W-]+/g, '-'), label: genre })));
+                    }
+                    if (filters.platforms) {
+                        setSelectedPlatforms(filters.platforms.map(platform => ({ value: platform.toLowerCase().replace(/[\s\W-]+/g, '-'), label: platform })));
+                    }
+                    if (filters.game_modes) {
+                        setSelectedGameModes(filters.game_modes.map(game_mode => ({ value: game_mode.toLowerCase().replace(/[\s\W-]+/g, '-'), label: game_mode })));
+                    }
+                    if (filters.player_perspectives) {
+                        setSelectedPlayerPerspectives(filters.player_perspectives.map(player_perspective => ({ value: player_perspective.toLowerCase().replace(/[\s\W-]+/g, '-'), label: player_perspective })));
+                    }
+                    if (filters.themes) {
+                        setSelectedThemes(filters.themes.map(theme => ({ value: theme.toLowerCase().replace(/[\s\W-]+/g, '-'), label: theme })));
+                    }
+                    if (filters.release_date) {
+                        setSelectedReleaseDate(filters.release_date.map(release_date => ({ value: release_date.toLowerCase().replace(/[\s\W-]+/g, '-'), label: release_date })));
+                    }
+                    if (filters.age_ratings) {
+                        setSelectedAgeRatings(filters.age_ratings.map(age_rating => ({ value: age_ratings_mapping[age_rating], label: age_ratings_mapping[age_rating]})));
+                    }
+                    if (filters.game_engines) {
+                        setSelectedGameEngines(filters.game_engines.map(game_engine => ({ value: game_engine.toLowerCase().replace(/[\s\W-]+/g, '-'), label: game_engine })));
+                    }
+                    if (filters.languages) {
+                        setSelectedLanguages(filters.languages.map(language => ({ value: language.toLowerCase().replace(/[\s\W-]+/g, '-'), label: language })));
+                    }
+                    if (filters.rating) {
+                        setSelectedRating({ value: parseInt(filters.rating[0]), label: filters.rating[0] });
+                    }
+                    if (filters.rating_comparison) {
+                        setSelectedRatingComparison(filters.rating_comparison[0]);
+                    }
+                } else {
+                    console.error('Failed to fetch filters');
+                }
+            } catch (error) {
+                console.error('Error fetching filters:', error);
+            }
+        };
+
+        if (user) {
+            fetchFilters();
+        }
+    }, [user]);
 
 
     return (
@@ -248,6 +334,9 @@ const Filters = () => {
             </div>
             <button className="save-filters-button" onClick={handleSaveFilters}>
                 Save Filters
+            </button>
+            <button className="save-filters-button" onClick={clearRating}>
+                Clear Rating
             </button>
         </div>
     );

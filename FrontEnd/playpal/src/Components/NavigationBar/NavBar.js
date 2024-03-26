@@ -39,7 +39,7 @@ const NavBar = () => {
         const password = event.target.password.value;
         try {
             const response = await post('/login', { username, password });
-            login(response.username);
+            login({username: response.username, user_id: response.user_id});
             setShowLoginForm(false);
             setLoginError('');
         } catch (error) {

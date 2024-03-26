@@ -6,9 +6,10 @@ from dotenv import load_dotenv
 import os
 import requests
 import json
-from models import User, db
+from models import User, UserFilter, FilterCategory, db
 from igdb.wrapper import IGDBWrapper
 import time
+from sqlalchemy import and_
 
 load_dotenv()
 app = Flask(__name__)
@@ -97,12 +98,13 @@ def construct_query(filters):
 
     # Join all parts of the query
     if query_parts:
-        where_clause = 'where ' + ' & '.join(query_parts) + ';'
+        where_clause = ' & '.join(query_parts)
+        where_clause = ' & ' + where_clause if where_clause else ''
     else:
         where_clause = ''
 
     # Construct the full query
-    query = f"fields id, name, cover.url, genres.name, platforms.name, rating, summary; {where_clause} limit 100;"
+    query = f"fields id, name, cover.url, genres.name, platforms.name, rating, summary; where rating != null & summary != null & genres != null & platforms != null {where_clause} ; limit 100;"
     return query
 
 ### TEST API ENDPOINTS ###
@@ -155,18 +157,95 @@ def login():
 
     if user and bcrypt.check_password_hash(user.password, password):
         # Authentication successful
-        return jsonify(message="Login successful", username=user.username), 200
+        return jsonify(message="Login successful", username=user.username, user_id=user.userid), 200
     else:
         # Authentication failed
         return jsonify(message="Invalid username or password"), 401
+    
+### FILTER ENDPOINTS ###
+@app.route('/api/user_filters', methods=['POST'])
+def get_user_filters():
+    # Get the user ID from the request
+    user_id = request.json['user_id']
+    
+    # Get the filters from the database
+    user_filters = UserFilter.query.filter_by(user_id=user_id).all()
+    
+    # Create an empty dictionary to store the filters
+    filters = {}
+    
+    # Loop through the user filters and add them to the dictionary
+    for user_filter in user_filters:
+        category = FilterCategory.query.filter_by(category_id=user_filter.category_id).first()
+        if category.category_name == 'ratings':
+            filters[category.category_name] = user_filter.option_value
+        else:
+            if category.category_name not in filters:
+                filters[category.category_name] = []
+                filters[category.category_name].append(user_filter.option_value)
+    
+    return jsonify(filters), 200
+
+@app.route('/api/user_filters', methods=['PUT'])
+def update_user_filters():
+    # Get the user ID from the request
+    user_id = request.json.get('user_id')
+    
+    # Get the filters from the request
+    filters = request.json.get('filters')
+    
+    # Delete the existing filters for the user
+    UserFilter.query.filter_by(user_id=user_id).delete()
+    
+    # Loop through the filters and add them to the database
+    for filter in filters:
+        for option in filters[filter]:
+            # Get the category ID from the database
+            category = FilterCategory.query.filter_by(category_name=filter).first()
+            
+            # Create a new UserFilter object
+            user_filter = UserFilter(
+                user_id=user_id,
+                category_id=category.category_id,
+                option_value=option
+            )
+            db.session.add(user_filter)
+        # Commit the changes to the database
+        db.session.commit()
+    
+    return jsonify(message="Filters updated successfully"), 200
+
+@app.route('/api/query', methods=['PUT'])
+def update_query():
+    # Get the user ID and query from the request
+    user_id = request.json.get('user_id')
+    filters = request.json.get('filters')
+    
+    # Construct the query
+    query = construct_query(filters)
+    
+    # Update the query in the database
+    # Find the user from user_id
+    user = User.query.filter_by(userid=user_id).first()
+    user.game_query = query
+    db.session.commit()
+    
+    return jsonify(message="Query updated successfully"), 200
+
+
     
 ### IGDB API ENDPOINTS ###
 # Get Games
 @app.route('/api/games', methods=['GET'])
 def get_games():
+    user_id = request.json.get('user_id')
+    
+    # Get the user's query from the database
+    user = User.query.filter_by(userid=user_id).first()
+    query = user.game_query
     games_array = wrapper.api_request(
             'games',
-            'fields id, name; offset 0; where platforms=48;'
+            query
           )
     
     games = json.loads(games_array)
@@ -177,15 +256,22 @@ def get_games():
 # Generate game recommendation card
 @app.route('/api/recommendation', methods=['POST'])
 def get_recommendation():
-    filters = request.json
-    query = construct_query(filters)
+    user_id = request.json.get('user_id')
+    
+    # Get the user's query from the database
+    user = User.query.filter_by(userid=user_id).first()
+    query = user.game_query
+    
     recommendation_array = wrapper.api_request('games', query)
     
     recommendations = json.loads(recommendation_array)
 
     for recommendation in recommendations:
         # Round off the rating to a whole number
-        recommendation['rating'] = round(recommendation['rating'])
+        if 'rating' in recommendation:
+            recommendation['rating'] = round(recommendation['rating'])
+        else:
+            recommendation['rating'] = 'No rating available'
 
         # Modify recommendation to include cover url
         if 'cover' in recommendation and 'url' in recommendation['cover']:
