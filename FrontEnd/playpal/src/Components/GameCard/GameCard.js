@@ -1,13 +1,38 @@
 // GameCard.js
 import React, { useState, useEffect } from 'react';
 import './GameCard.css';
+import { post } from '../../Utilities/api-utility';
 
 const GameCard = ({ game }) => {
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
   const summaryThreshold = 250;
+  const [isLoading, setIsLoading] = useState(false);
 
   const toggleSummary = () => {
     setIsSummaryExpanded(!isSummaryExpanded);
+  }
+
+  const handleInteraction = async (interaction) => {
+    setIsLoading(true);
+    body = {
+      user_id: user.user_id,
+      game_id: game.game_id,
+      interaction_type: interaction,
+      genre: game.genres,
+      rating: game.rating,
+      release_date: game.release_date,
+      game_modes: game.game_modes,
+      themes: game.themes
+    }
+
+    try {
+      const response = await post('/interaction', body);
+      console.log(response);
+    } catch (error) {
+      console.error('Failed to post interaction:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
     useEffect(() => {
@@ -35,8 +60,12 @@ const GameCard = ({ game }) => {
       <p><strong>Rating:</strong> {game.rating}</p>
       <p><strong>Genres:</strong> {game.genres.join(', ')}</p>
       <p><strong>Platforms:</strong> {game.platforms.join(', ')}</p>
-      <button>Thumbs Up</button>
-      <button>Thumbs Down</button>
+      <button onClick={handleInteraction} disabled={isLoading}>
+        {isLoading ? <div className='spinner'></div> : 'Thumbs Up'}
+      </button>
+      <button onClick={handleInteraction}>
+        {isLoading ? <div className='spinner'></div> : 'Thumbs Down'}
+      </button>
     </div>
   );
 };

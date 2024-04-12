@@ -13,13 +13,17 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     registrationdate = db.Column(db.DateTime, server_default=func.now())
     game_query = db.Column(db.Text)
+    age = db.Column(db.Integer)  # Added age column
+    gender = db.Column(db.String(50))  # Added gender column
 
     user_filters = db.relationship('UserFilter', backref='user', lazy=True)
 
-    def __init__(self, username, password, email):
+    def __init__(self, username, password, email, age=None, gender=None):
         self.username = username
         self.password = password
         self.email = email
+        self.age = age
+        self.gender = gender
 
 class FilterCategory(db.Model):
     __tablename__ = 'filter_categories'
@@ -44,3 +48,27 @@ class UserFilter(db.Model):
         self.user_id = user_id
         self.category_id = category_id
         self.option_value = option_value
+        
+# New Game model
+class Game(db.Model):
+    __tablename__ = 'games'
+
+    game_id = db.Column(db.Integer, primary_key=True)
+    genre = db.Column(db.String(255))
+    rating = db.Column(db.Float)
+    release_date = db.Column(db.DateTime)
+    game_modes = db.Column(db.String)  # Storing as JSON string
+    themes = db.Column(db.String)  # Storing as JSON string
+
+# New UserGameInteraction model
+class UserGameInteraction(db.Model):
+    __tablename__ = 'user_game_interactions'
+
+    interaction_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_table.userid'))
+    game_id = db.Column(db.Integer, db.ForeignKey('games.game_id'))
+    interaction_type = db.Column(db.String(50))
+    interaction_timestamp = db.Column(db.DateTime, default=func.now())
+
+    user = db.relationship('User', backref='interactions')
+    game = db.relationship('Game', backref='interactions')

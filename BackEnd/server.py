@@ -6,10 +6,14 @@ from dotenv import load_dotenv
 import os
 import requests
 import json
-from models import User, UserFilter, FilterCategory, db
+from models import User, UserFilter, FilterCategory, Game, UserGameInteraction, db
 from igdb.wrapper import IGDBWrapper
 import time
 from sqlalchemy import and_
+import random
+from collections import defaultdict
+
+recommendation_cache = defaultdict(set)
 
 load_dotenv()
 app = Flask(__name__)
@@ -104,8 +108,44 @@ def construct_query(filters):
         where_clause = ''
 
     # Construct the full query
-    query = f"fields id, name, cover.url, genres.name, platforms.name, rating, summary; where rating != null & summary != null & genres != null & platforms != null {where_clause} ; limit 100;"
+    query = f"fields id, name, cover.url, genres.name, platforms.name, rating, summary, release_dates.y, game_modes.name, themes.name; where rating != null & summary != null & genres != null & platforms != null {where_clause} ; limit 500;"
     return query
+
+def update_recommendation_cache(user_id, recommendations):
+    """Update the cache with new recommendations."""
+    # Convert the set to a list to have a predictable order for removal
+    cached_list = list(recommendation_cache[user_id])
+
+    # Add new game IDs to the cache
+    new_ids = [game['id'] for game in recommendations]
+    cached_list.extend(new_ids)
+
+    # If the cache exceeds 200 items, remove the oldest 100 items
+    if len(cached_list) > 200:
+        cached_list = cached_list[100:]
+
+    # Convert the list back to a set for fast lookup and update the cache
+    recommendation_cache[user_id] = set(cached_list)
+
+
+def adjust_query_for_exclusions(original_query, excluded_game_ids):
+    """
+    Adjust the IGDB API query to exclude specific game IDs.
+
+    :param original_query: The original query string
+    :param excluded_game_ids: A set or list of game IDs to exclude
+    :return: The adjusted query string
+    """
+    # Split the query to insert the exclusions before '; limit 500;'
+    query_parts = original_query.split('; limit 500;')
+    
+    # Construct the exclusion part of the query
+    exclusions = ' & '.join([f'id != {game_id}' for game_id in excluded_game_ids])
+    
+    # Reconstruct the query with exclusions
+    adjusted_query = f"{query_parts[0]} & {exclusions} ; limit 500;"
+
+    return adjusted_query
 
 ### TEST API ENDPOINTS ###
 @app.route('/api/test_db', methods=['GET'])
@@ -261,10 +301,28 @@ def get_recommendation():
     # Get the user's query from the database
     user = User.query.filter_by(userid=user_id).first()
     query = user.game_query
+    print(query)
+    
+    excluded_game_ids = recommendation_cache[user_id]
+    
+    # Adjust the query to exclude games that have already been recommended
+    if excluded_game_ids:
+        query = adjust_query_for_exclusions(query, excluded_game_ids)
+    print(query)
     
     recommendation_array = wrapper.api_request('games', query)
     
     recommendations = json.loads(recommendation_array)
+    
+    # Shuffle recommendations
+    random.shuffle(recommendations)
+    
+    # Randomly select 100 recommendations
+    if (len(recommendations) > 100):
+        recommendations = random.sample(recommendations, 100)
+        
+    # Update the cache with new recommendations
+    update_recommendation_cache(user_id, recommendations)
 
     for recommendation in recommendations:
         # Round off the rating to a whole number
@@ -293,8 +351,63 @@ def get_recommendation():
             
         if 'summary' not in recommendation:
             recommendation['summary'] = 'No summary available.'
+            
+        if 'release_dates' in recommendation:
+            recommendation['release_date'] = recommendation['release_dates'][0]['y']
+        else:
+            recommendation['release_date'] = 'No release date available.'
+        
+        if 'game_modes' in recommendation:
+            recommendation['game_modes'] = [game_mode['name'] for game_mode in recommendation['game_modes']]
+        else:
+            recommendation['game_modes'] = []
+        
+        if 'themes' in recommendation:
+            recommendation['themes'] = [theme['name'] for theme in recommendation['themes']]
+        else:
+            recommendation['themes'] = []
     
     return jsonify(recommendations), 200    
+
+# Handle interaction "Thumbs Up" or "Thumbs Down" for a game recommendation
+@app.route('/api/interaction', methods=['POST'])
+def handle_interaction():
+    user_id = request.json.get('user_id')
+    game_id = request.json.get('game_id')
+    interaction_type = request.json.get('interaction_type')
+    genre = request.json.get('genre')
+    rating = request.json.get('rating')
+    release_date = request.json.get('release_date')
+    game_modes = request.json.get('game_modes')
+    themes = request.json.get('themes')
+    
+    # game_modes and themes will be stored as arrays we need to convert them to strings
+    game_modes = ','.join(game_modes)
+    themes = ','.join(themes)
+    genres = ','.join(genre)
+    
+    # Enter the game into the Games table if it does not exist 
+    # Check if the game already exists in the Games table
+    existing_game = Game.query.filter_by(id=game_id).first()
+
+    # If the game does not exist, create a new entry in the Games table
+    if not existing_game:
+        new_game = Game(id=game_id, genre=genre, rating=rating, release_date=release_date, game_modes=game_modes, themes=themes)
+        db.session.add(new_game)
+        db.session.commit()
+    
+    # Create a new UserGameInteraction object
+    user_interaction = UserGameInteraction(
+        user_id=user_id,
+        game_id=game_id,
+        interaction_type=interaction_type
+    )
+    
+    # Add the new interaction to the database
+    db.session.add(user_interaction)
+    db.session.commit()
+    
+    return jsonify(message="Interaction recorded successfully"), 200
 
 
 
