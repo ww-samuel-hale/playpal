@@ -1,12 +1,14 @@
 // GameCard.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './GameCard.css';
 import { post } from '../../Utilities/api-utility';
+import MyContext from '../../Context/Context';
 
 const GameCard = ({ game }) => {
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
   const summaryThreshold = 250;
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useContext(MyContext);
 
   const toggleSummary = () => {
     setIsSummaryExpanded(!isSummaryExpanded);
@@ -14,9 +16,9 @@ const GameCard = ({ game }) => {
 
   const handleInteraction = async (interaction) => {
     setIsLoading(true);
-    body = {
+    var body = {
       user_id: user.user_id,
-      game_id: game.game_id,
+      game_id: game.id,
       interaction_type: interaction,
       genre: game.genres,
       rating: game.rating,
@@ -60,10 +62,10 @@ const GameCard = ({ game }) => {
       <p><strong>Rating:</strong> {game.rating}</p>
       <p><strong>Genres:</strong> {game.genres.join(', ')}</p>
       <p><strong>Platforms:</strong> {game.platforms.join(', ')}</p>
-      <button onClick={handleInteraction} disabled={isLoading}>
+      <button onClick={() => handleInteraction('like')} disabled={isLoading}>
         {isLoading ? <div className='spinner'></div> : 'Thumbs Up'}
       </button>
-      <button onClick={handleInteraction}>
+      <button onClick={() => handleInteraction('dislike')}>
         {isLoading ? <div className='spinner'></div> : 'Thumbs Down'}
       </button>
     </div>

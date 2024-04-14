@@ -301,9 +301,10 @@ def get_recommendation():
     # Get the user's query from the database
     user = User.query.filter_by(userid=user_id).first()
     query = user.game_query
-    print(query)
     
-    excluded_game_ids = recommendation_cache[user_id]
+    # Get the game IDs from UserGameInteraction for the user
+    user_interactions = UserGameInteraction.query.filter_by(userid=user_id).all()
+    excluded_game_ids = [interaction.gameid for interaction in user_interactions]
     
     # Adjust the query to exclude games that have already been recommended
     if excluded_game_ids:
@@ -367,7 +368,7 @@ def get_recommendation():
         else:
             recommendation['themes'] = []
     
-    return jsonify(recommendations), 200    
+    return jsonify(recommendations), 200
 
 # Handle interaction "Thumbs Up" or "Thumbs Down" for a game recommendation
 @app.route('/api/interaction', methods=['POST'])
@@ -388,24 +389,32 @@ def handle_interaction():
     
     # Enter the game into the Games table if it does not exist 
     # Check if the game already exists in the Games table
-    existing_game = Game.query.filter_by(id=game_id).first()
+    existing_game = Game.query.filter_by(gameid=game_id).first()
 
     # If the game does not exist, create a new entry in the Games table
     if not existing_game:
-        new_game = Game(id=game_id, genre=genre, rating=rating, release_date=release_date, game_modes=game_modes, themes=themes)
+        new_game = Game(gameid=game_id, genre=genre, rating=rating, release_date=release_date, game_modes=game_modes, themes=themes)
         db.session.add(new_game)
         db.session.commit()
     
-    # Create a new UserGameInteraction object
-    user_interaction = UserGameInteraction(
-        user_id=user_id,
-        game_id=game_id,
-        interaction_type=interaction_type
-    )
+    # Check if a UserGameInteraction already exists for the given gameid and userid
+    existing_interaction = UserGameInteraction.query.filter_by(userid=user_id, gameid=game_id).first()
     
-    # Add the new interaction to the database
-    db.session.add(user_interaction)
-    db.session.commit()
+    if existing_interaction:
+        # Update the interactiontype
+        existing_interaction.interactiontype = interaction_type
+        db.session.commit()
+    else:
+        # Create a new UserGameInteraction object
+        user_interaction = UserGameInteraction(
+            userid=user_id,
+            gameid=game_id,
+            interactiontype=interaction_type
+        )
+        
+        # Add the new interaction to the database
+        db.session.add(user_interaction)
+        db.session.commit()
     
     return jsonify(message="Interaction recorded successfully"), 200
 

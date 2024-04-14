@@ -53,22 +53,22 @@ class UserFilter(db.Model):
 class Game(db.Model):
     __tablename__ = 'games'
 
-    game_id = db.Column(db.Integer, primary_key=True)
+    gameid = db.Column(db.Integer, primary_key=True)
     genre = db.Column(db.String(255))
     rating = db.Column(db.Float)
-    release_date = db.Column(db.DateTime)
+    release_date = db.Column(db.String)
     game_modes = db.Column(db.String)  # Storing as JSON string
     themes = db.Column(db.String)  # Storing as JSON string
 
 # New UserGameInteraction model
 class UserGameInteraction(db.Model):
-    __tablename__ = 'user_game_interactions'
+    __tablename__ = 'usergameinteractions'
 
-    interaction_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user_table.userid'))
-    game_id = db.Column(db.Integer, db.ForeignKey('games.game_id'))
-    interaction_type = db.Column(db.String(50))
-    interaction_timestamp = db.Column(db.DateTime, default=func.now())
+    interactionid = db.Column(db.Integer, primary_key=True)
+    userid = db.Column(db.Integer, db.ForeignKey('user_table.userid'))
+    gameid = db.Column(db.Integer, db.ForeignKey('games.gameid'))
+    interactiontype = db.Column(db.String(50))
+    interactiontimestamp = db.Column(db.DateTime, default=func.now())
 
     user = db.relationship('User', backref='interactions')
     game = db.relationship('Game', backref='interactions')
