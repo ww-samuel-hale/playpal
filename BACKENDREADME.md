@@ -10,9 +10,19 @@
 4. Navigate to the `BackEnd` directory: `cd BackEnd`.
 5. Create a virtual environment: `python3 -m venv venv`.
 6. Activate the virtual environment: `source venv/bin/activate`.
-7. Install Flask: `pip install Flask`.
-8. Install Flask-CORS: `pip install flask-cors`.
-9. Start the server: `python3 server.py`.
+7. 
+pip install flask
+pip install flask-cors
+pip install flask-bcrypt
+pip install python-dotenv
+pip install numpy
+pip install scikit-learn
+pip install sqlalchemy
+pip install requests
+pip install igdb-api-v4
+pip install Flask-SQLAlchemy
+pip install SQLAlchemy
+8. Start the server: `python3 server.py`.
 
 ### Windows
 
@@ -24,14 +34,24 @@
 4. Navigate to the `BackEnd` directory: `cd BackEnd`.
 5. Create a virtual environment: `python -m venv venv`.
 6. Activate the virtual environment: `venv\Scripts\activate`.
-7. Install Flask: `pip install Flask`.
-8. Install Flask-CORS: `pip install flask-cors`.
-9. Start the server: `python server.py`.
+7. 
+pip install flask
+pip install flask-cors
+pip install flask-bcrypt
+pip install python-dotenv
+pip install numpy
+pip install scikit-learn
+pip install sqlalchemy
+pip install requests
+pip install igdb-api-v4
+pip install Flask-SQLAlchemy
+pip install SQLAlchemy
+8. Start the server: `python server.py`.
 
 ### Check to see if server is running
 
 1. Open POSTMAN software
-2. Create a GET request to http://127.0.0.1:5000/api/hello
+2. Create a GET request to http://localhost:5000/api/hello
 3. Verify a response similar to: 
 {
     "message": "Hello from Flask!"
@@ -43,3 +63,4 @@
 3. Click the postgres database
 4. Enter 'psql -U postgres' into new cli
 5. 'CREATE DATABASE playpal;'
+6. Run each table creation command from database_commands.txt

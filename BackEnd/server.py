@@ -1,23 +1,20 @@
+import json
+import os
+from collections import defaultdict
+
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request, current_app
 from flask_cors import CORS
-from sqlalchemy import text
 from flask_bcrypt import Bcrypt
-from dotenv import load_dotenv
-import os
-import requests
-import json
-from models import User, UserFilter, FilterCategory, Game, UserGameInteraction, db
-from igdb.wrapper import IGDBWrapper
-import time
-from sqlalchemy import and_
-import random
-from collections import defaultdict
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MultiLabelBinarizer
+from sqlalchemy import text
 import numpy as np
-from collections.abc import Iterable
+import requests
+
+from models import User, UserFilter, FilterCategory, Game, UserGameInteraction, db
+from igdb.wrapper import IGDBWrapper
+
 
 recommendation_cache = defaultdict(set)
 

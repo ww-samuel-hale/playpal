@@ -12,12 +12,45 @@ GRANT USAGE, SELECT, UPDATE ON SEQUENCE user_table_userid_seq TO playpal;
 \c playpal
 
 CREATE TABLE user_table (
-    UserID SERIAL PRIMARY KEY,
-    userName VARCHAR(255),
-    passWord VARCHAR(255),
-    Email VARCHAR(255),
-    RegistrationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    userid SERIAL PRIMARY KEY,
+    username VARCHAR(80) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(120) NOT NULL UNIQUE,
+    registrationdate TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    game_query TEXT,
+    age INTEGER,
+    gender VARCHAR(50)
 );
 
+CREATE TABLE filter_categories (
+    category_id SERIAL PRIMARY KEY,
+    category_name VARCHAR(255) NOT NULL
+);
 
+CREATE TABLE user_filters (
+    user_filter_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    category_id INTEGER NOT NULL,
+    option_value TEXT,
+    FOREIGN KEY (user_id) REFERENCES user_table (userid),
+    FOREIGN KEY (category_id) REFERENCES filter_categories (category_id)
+);
 
+CREATE TABLE games (
+    gameid SERIAL PRIMARY KEY,
+    genre VARCHAR(255),
+    rating FLOAT,
+    release_date VARCHAR(255),
+    game_modes VARCHAR(255),
+    themes VARCHAR(255)
+);
+
+CREATE TABLE usergameinteractions (
+    interactionid SERIAL PRIMARY KEY,
+    userid INTEGER NOT NULL,
+    gameid INTEGER NOT NULL,
+    interactiontype VARCHAR(50),
+    interactiontimestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userid) REFERENCES user_table (userid),
+    FOREIGN KEY (gameid) REFERENCES games (gameid)
+);
