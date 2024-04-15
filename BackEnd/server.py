@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, current_app
 from flask_cors import CORS
 from sqlalchemy import text
 from flask_bcrypt import Bcrypt
@@ -12,8 +12,67 @@ import time
 from sqlalchemy import and_
 import random
 from collections import defaultdict
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MultiLabelBinarizer
+import numpy as np
+from collections.abc import Iterable
 
 recommendation_cache = defaultdict(set)
+
+all_genres = ["Point-and-click",
+        "Fighting",
+        "Shooter",
+        "Music",
+        "Platform",
+        "Puzzle",
+        "Racing",
+        "Real Time Strategy (RTS)",
+        "Role-playing (RPG)",
+        "Simulator",
+        "Sport",
+        "Strategy",
+        "Turn-based strategy (TBS)",
+        "Tactical",
+        "Hack and slash/Beat 'em up",
+        "Quiz/Trivia",
+        "Pinball",
+        "Adventure",
+        "Indie",
+        "Arcade",
+        "Visual Novel",
+        "Card & Board Game",
+        "MOBA"]
+all_themes = ["Action",
+        "Fantasy",
+        "Science fiction",
+        "Horror",
+        "Thriller",
+        "Survival",
+        "Historical",
+        "Stealth",
+        "Comedy",
+        "Business",
+        "Drama",
+        "Non-fiction",
+        "Sandbox",
+        "Educational",
+        "Kids",
+        "Open world",
+        "Warfare",
+        "Party",
+        "4X (explore, expand, exploit, and exterminate)",
+        "Erotic",
+        "Mystery",
+        "Romance"]
+all_game_modes = [ 
+        "Single player",
+        "Multiplayer",
+        "Co-operative",
+        "Split screen",
+        "Massively Multiplayer Online (MMO)",
+        "Battle Royale"]
 
 load_dotenv()
 app = Flask(__name__)
@@ -147,6 +206,101 @@ def adjust_query_for_exclusions(original_query, excluded_game_ids):
 
     return adjusted_query
 
+def prepare_data(games):
+    """Prepares data by filling missing values and combining features."""
+    prepared_games = {}
+    if isinstance(games, dict):
+        games = [games]
+    for game in games:
+        prepared_game = {
+            'themes': game.themes.strip('{}').replace('"', '').split(',') if game.themes != '' else ['No Themes'],
+            'genre': game.genre.strip('{}').replace('"', '').split(',') if game.genre != '' else ['No Genre'],
+            'game_modes': game.game_modes.strip('{}').replace('"', '').split(',') if game.game_modes != '' else ['No Game Modes'],
+            'release_date': game.release_date if game.release_date != '' else 'No Release Date',
+            'rating': game.rating if game.rating else 0
+        }
+        prepared_game['combined_features'] = f"{prepared_game['genre']} {prepared_game['themes']} {prepared_game['game_modes']} {prepared_game['release_date']} {prepared_game['rating']}"
+        prepared_games[game.gameid] = prepared_game
+    return prepared_games
+
+def train_model(tfidf_matrix):
+    """Calculates the cosine similarity matrix."""
+    cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+    return cosine_sim
+
+def get_recommendations(game_id, games, cosine_sim):
+    """Generates game recommendations for a given game ID."""
+    idx = games.index[games['gameid'] == game_id].tolist()[0]
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    sim_scores = sim_scores[1:6]
+    game_indices = [i[0] for i in sim_scores]
+    return games['title'].iloc[game_indices]
+
+def create_user_profile_vector(user_interactions, game_features, mlb_genre, mlb_theme, mlb_game_modes):
+    # Initialize profile vectors for each feature type
+    profile_genre = np.zeros(len(mlb_genre.classes_))
+    profile_theme = np.zeros(len(mlb_theme.classes_))
+    profile_game_modes = np.zeros(len(mlb_game_modes.classes_))
+    
+    # Loop through each user interaction
+    for interaction in user_interactions:
+        game_id = interaction.gameid
+        game_data = game_features[game_id]
+        
+        # Encode each feature type
+        genre_vector = mlb_genre.transform([game_data['genre']])
+        theme_vector = mlb_theme.transform([game_data['themes']])
+        game_modes_vector = mlb_game_modes.transform([game_data['game_modes']])
+        
+        # Apply interaction weight
+        interaction_weight = 1 if interaction.interactiontype == 'like' else -1
+        
+        # Weight each feature vector by the interaction and game rating
+        rating_weight = game_data['rating'] / 100  # Normalize game rating
+        total_weight = interaction_weight * rating_weight
+        
+        # Update the profile vectors
+        profile_genre += genre_vector[0] * total_weight
+        profile_theme += theme_vector[0] * total_weight
+        profile_game_modes += game_modes_vector[0] * total_weight
+    
+    # Combine the feature vectors into one profile vector and normalize
+    profile_vector = np.concatenate([profile_genre, profile_theme, profile_game_modes])
+    if np.linalg.norm(profile_vector) > 0:
+        profile_vector /= np.linalg.norm(profile_vector)
+    
+    return profile_vector
+
+def transform_game_features(candidate_games, mlb_genre, mlb_theme, mlb_game_modes):
+    # Extract and transform the 'name' attributes for each game's genres, themes, and game modes
+    genres = [[genre['name'] for genre in game['genres']] if 'genres' in game else [] for game in candidate_games]
+    themes = [[theme['name'] for theme in game['themes']] if 'themes' in game else [] for game in candidate_games]
+    game_modes = [[game_mode['name'] for game_mode in game['game_modes']] if 'game_modes' in game else [] for game in candidate_games]
+
+    # Transform the features using the fitted MultiLabelBinarizers
+    genre_matrix = mlb_genre.transform(genres)
+    theme_matrix = mlb_theme.transform(themes)
+    game_modes_matrix = mlb_game_modes.transform(game_modes)
+
+    # Combine the matrices into a single feature matrix for all games
+    combined_matrix = np.hstack((genre_matrix, theme_matrix, game_modes_matrix))
+
+    return combined_matrix
+
+    
+def cosine_similarity(user_profile, candidate_games_matrix):
+    # Calculate the cosine similarity between the user profile and candidate games
+    similarity = np.dot(candidate_games_matrix, user_profile.T)
+    
+    return similarity
+
+def calculate_similarity(user_profile_vector, game_features_matrix):
+    similarity_scores = cosine_similarity(user_profile_vector.T, game_features_matrix)
+        
+    return similarity_scores
+
+
 ### TEST API ENDPOINTS ###
 @app.route('/api/test_db', methods=['GET'])
 def test_db():
@@ -196,10 +350,11 @@ def login():
     user = User.query.filter_by(username=username).first()
 
     if user and bcrypt.check_password_hash(user.password, password):
-        # Authentication successful
+        current_app.logger.debug("Authentication successful")
         return jsonify(message="Login successful", username=user.username, user_id=user.userid), 200
     else:
-        # Authentication failed
+        current_app.logger.debug("Authentication failed")
+        current_app.logger.debug(f"Expected Hash: {user.password} Provided Password: {password}")
         return jsonify(message="Invalid username or password"), 401
     
 ### FILTER ENDPOINTS ###
@@ -305,6 +460,25 @@ def get_recommendation():
     # Get the game IDs from UserGameInteraction for the user
     user_interactions = UserGameInteraction.query.filter_by(userid=user_id).all()
     excluded_game_ids = [interaction.gameid for interaction in user_interactions]
+    print(user_interactions)
+
+    game_ids = [interaction.gameid for interaction in user_interactions]
+    games = Game.query.filter(Game.gameid.in_(game_ids)).all()  # Fix: Use 'in_' operator to filter games by IDs
+    print(games)
+
+    prepared_data = prepare_data(games)
+    print(prepared_data)
+
+    mlb_genre = MultiLabelBinarizer()
+    mlb_theme = MultiLabelBinarizer()
+    mlb_game_modes = MultiLabelBinarizer()
+    
+    mlb_genre.fit([all_genres])
+    mlb_theme.fit([all_themes])
+    mlb_game_modes.fit([all_game_modes])
+    
+    user_profile = create_user_profile_vector(user_interactions, prepared_data, mlb_genre, mlb_theme, mlb_game_modes)
+    print(user_profile)
     
     # Adjust the query to exclude games that have already been recommended
     if excluded_game_ids:
@@ -315,17 +489,24 @@ def get_recommendation():
     
     recommendations = json.loads(recommendation_array)
     
-    # Shuffle recommendations
-    random.shuffle(recommendations)
+    recommendations_features = transform_game_features(recommendations, mlb_genre, mlb_theme, mlb_game_modes)
     
-    # Randomly select 100 recommendations
-    if (len(recommendations) > 100):
-        recommendations = random.sample(recommendations, 100)
+    similarity_scores = calculate_similarity(user_profile, recommendations_features)
+    print(similarity_scores)
+    
+    sorted_indices = np.argsort(similarity_scores)[::-1]
+    print(sorted_indices)
+    
+    top_indices = sorted_indices[:100]
+    print(top_indices)
+    
+    top_games = [recommendations[i] for i in top_indices]
+    print(top_games)
         
     # Update the cache with new recommendations
-    update_recommendation_cache(user_id, recommendations)
+    update_recommendation_cache(user_id, top_games)
 
-    for recommendation in recommendations:
+    for recommendation in top_games:
         # Round off the rating to a whole number
         if 'rating' in recommendation:
             recommendation['rating'] = round(recommendation['rating'])
@@ -353,7 +534,7 @@ def get_recommendation():
         if 'summary' not in recommendation:
             recommendation['summary'] = 'No summary available.'
             
-        if 'release_dates' in recommendation:
+        if 'release_dates' in recommendation and 'y' in recommendation['release_dates'][0]:
             recommendation['release_date'] = recommendation['release_dates'][0]['y']
         else:
             recommendation['release_date'] = 'No release date available.'
@@ -368,7 +549,7 @@ def get_recommendation():
         else:
             recommendation['themes'] = []
     
-    return jsonify(recommendations), 200
+    return jsonify(top_games), 200
 
 # Handle interaction "Thumbs Up" or "Thumbs Down" for a game recommendation
 @app.route('/api/interaction', methods=['POST'])
