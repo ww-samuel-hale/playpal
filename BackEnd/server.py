@@ -327,8 +327,11 @@ def register():
     # Hash the password
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     
+    # Create a base query
+    query = construct_query({})
+    
     # Create a new user
-    new_user = User(username=username, password=hashed_password, email=email)
+    new_user = User(username=username, password=hashed_password, email=email, game_query=query)
     
     # Add the new user to the database
     db.session.add(new_user)
@@ -499,6 +502,9 @@ def get_recommendation():
     
     top_games = [recommendations[i] for i in top_indices]
     print(top_games)
+    
+    # Randomize the order of the top games
+    np.random.shuffle(top_games)
         
     # Update the cache with new recommendations
     update_recommendation_cache(user_id, top_games)

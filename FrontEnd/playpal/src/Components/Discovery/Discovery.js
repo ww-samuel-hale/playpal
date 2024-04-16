@@ -41,7 +41,7 @@ const Discovery = () => {
                 <div className="discovery-navigation">
                     <button onClick={handlePrevious} className="navigation-button">&lt;</button>
                     <div className='game-card-wrapper'>
-                        <GameCard game={games[currentIndex]} />
+                        <GameCard game={games[currentIndex]} handleNext={handleNext}/>
                     </div>
                     <button onClick={handleNext} className='navigation-button'>&gt;</button>
                 </div>

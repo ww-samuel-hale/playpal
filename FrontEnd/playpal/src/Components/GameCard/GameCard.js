@@ -4,7 +4,7 @@ import './GameCard.css';
 import { post } from '../../Utilities/api-utility';
 import MyContext from '../../Context/Context';
 
-const GameCard = ({ game }) => {
+const GameCard = ({ game, handleNext }) => {
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
   const summaryThreshold = 250;
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +30,7 @@ const GameCard = ({ game }) => {
     try {
       const response = await post('/interaction', body);
       console.log(response);
+      handleNext();
     } catch (error) {
       console.error('Failed to post interaction:', error);
     } finally {

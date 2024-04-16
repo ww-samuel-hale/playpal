@@ -18,9 +18,10 @@ class User(db.Model):
 
     user_filters = db.relationship('UserFilter', backref='user', lazy=True)
 
-    def __init__(self, username, password, email, age=None, gender=None):
+    def __init__(self, username, password, email, game_query, age=None, gender=None):
         self.username = username
         self.password = password
+        self.game_query = game_query
         self.email = email
         self.age = age
         self.gender = gender
