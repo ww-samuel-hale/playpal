@@ -1,23 +1,20 @@
+import json
+import os
+from collections import defaultdict
+
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request, current_app
 from flask_cors import CORS
-from sqlalchemy import text
 from flask_bcrypt import Bcrypt
-from dotenv import load_dotenv
-import os
-import requests
-import json
-from models import User, UserFilter, FilterCategory, Game, UserGameInteraction, db
-from igdb.wrapper import IGDBWrapper
-import time
-from sqlalchemy import and_
-import random
-from collections import defaultdict
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MultiLabelBinarizer
+from sqlalchemy import text
 import numpy as np
-from collections.abc import Iterable
+import requests
+
+from models import User, UserFilter, FilterCategory, Game, UserGameInteraction, db
+from igdb.wrapper import IGDBWrapper
+
 
 recommendation_cache = defaultdict(set)
 
@@ -330,8 +327,11 @@ def register():
     # Hash the password
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     
+    # Create a base query
+    query = construct_query({})
+    
     # Create a new user
-    new_user = User(username=username, password=hashed_password, email=email)
+    new_user = User(username=username, password=hashed_password, email=email, game_query=query)
     
     # Add the new user to the database
     db.session.add(new_user)
@@ -502,6 +502,9 @@ def get_recommendation():
     
     top_games = [recommendations[i] for i in top_indices]
     print(top_games)
+    
+    # Randomize the order of the top games
+    np.random.shuffle(top_games)
         
     # Update the cache with new recommendations
     update_recommendation_cache(user_id, top_games)
