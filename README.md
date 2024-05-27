@@ -105,8 +105,7 @@ The two main features are Machine Learning recommendations, which means that whe
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+To use a deployed version of this program, go to [https://playpal-jwmk.onrender.com](https://playpal-jwmk.onrender.com/) (Keep in mind that this is a free instance, so there may be some latency, especially if there is no traffic). To start a local instance, follow these steps: simple steps.
 
 ### Prerequisites
 
@@ -117,7 +116,7 @@ To get a local copy up and running follow these simple example steps.
 
 ### Installation
 
-1. Create "playpal" database
+1. Create "playpal" database 
 2. Set up database tables with database_commands.txt
 3. Create a .env in your BackEnd folder
 4. Fill in your API client secret and id
