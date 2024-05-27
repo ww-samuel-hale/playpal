@@ -69,12 +69,9 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -85,18 +82,18 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-This project was inspired by [Swipefy](https://apps.apple.com/us/app/swipefy-for-spotify/id6449814769) which is a swipe based music recommendation app that a colleagues son made with some friends. I saw this and loved how it worked. Which led me to think about where else we can use Machine Learning and AI to solve the content recommendation problem. After thinking through some examples I came to video games for two reasons:
-1) IGDB API offers free development API keys and I am not made of money
-2) This solves a problem that I have where I get bored of a game I have been playing but nothing really hits my video game "taste pallette" when I browse.
+This project was inspired by [Swipefy](https://apps.apple.com/us/app/swipefy-for-spotify/id6449814769), a swipe-based music suggestion software created by a colleague's kid and his pals. I saw this and enjoyed how it worked. This prompted me to consider how else we may use Machine Learning and AI to tackle the content recommendation problem. After considering a few examples, I chose video games for two reasons:
+1) IGDB API provides free development API keys, and I'm not made of money.
+2) This solves a problem for me where I grow bored with a game I've been playing but nothing really hits my video game "taste pallette" when I browse.
 
-The two core features are Machine Learning recommendation, so while you thumbs up and thumbs down games you will start to have a vector profile developed for you. Games will be compared to this vector profile and the top 100 most similar games will be recommended at each click of the "Generate Recommendations" button. The second feature is category filtering. This is more so to give the user control over what exactly they get recommended so they can filter along platform, rating, genre and some other more niche categories.
+The two main features are Machine Learning recommendations, which means that when you play games with thumbs up and thumbs down, a vector profile will be created. Games will be compared to this vector profile, and the top 100 most similar games will be suggested with each click of the "Generate Recommendations" button. The second feature is Category Filtering. This is mainly to offer the user choice over what they are recommended, allowing them to select by platform, rating, genre, and other more narrow categories.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 
 ### Built With
 
-* [![React][React.js]][React-url]
+* [![React][React.js]][React-url]]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
