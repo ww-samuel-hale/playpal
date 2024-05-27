@@ -33,7 +33,8 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">[PlayPal](https://playpal-jwmk.onrender.com)</h3>
+<h3 align="center"><a href="https://playpal-jwmk.onrender.com">PlayPal</a></h3>
+
 
   <p align="center">
     A video game recommendation service that uses machine learning and the IGDB API to tailor suggestions and allows users to manually filter based on a variety of criteria. 
