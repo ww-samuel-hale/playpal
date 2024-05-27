@@ -73,7 +73,7 @@ all_game_modes = [
 
 load_dotenv()
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 db.init_app(app)
