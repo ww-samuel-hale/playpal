@@ -22,7 +22,6 @@
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 
@@ -34,7 +33,7 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">PlayPal</h3>
+<h3 align="center">[PlayPal](https://playpal-jwmk.onrender.com)</h3>
 
   <p align="center">
     A video game recommendation service that uses machine learning and the IGDB API to tailor suggestions and allows users to manually filter based on a variety of criteria. 
@@ -85,8 +84,11 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `ww-samuel-hale`, `playpal`, `twitter_handle`, `samhale07`, `samuelhalebusiness@gmail.com_client`, `samuelhalebusiness@gmail.com`, `PlayPal`, `project_description`
+This project was inspired by [Swipefy](https://apps.apple.com/us/app/swipefy-for-spotify/id6449814769) which is a swipe based music recommendation app that a colleagues son made with some friends. I saw this and loved how it worked. Which led me to think about where else we can use Machine Learning and AI to solve the content recommendation problem. After thinking through some examples I came to video games for two reasons:
+1) IGDB API offers free development API keys and I am not made of money
+2) This solves a problem that I have where I get bored of a game I have been playing but nothing really hits my video game "taste pallette" when I browse.
 
+The two core features are Machine Learning recommendation, so while you thumbs up and thumbs down games you will start to have a vector profile developed for you. Games will be compared to this vector profile and the top 100 most similar games will be recommended at each click of the "Generate Recommendations" button. The second feature is category filtering. This is more so to give the user control over what exactly they get recommended so they can filter along platform, rating, genre and some other more niche categories.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -163,21 +165,10 @@ Don't forget to give the project a star! Thanks again!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
-<!-- LICENSE -->
-## License
-
-Distributed under the MIT License. 
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
 <!-- CONTACT -->
 ## Contact
 
-Your Name - samuelhalebusiness@gmail.com
+Samuel Hale - samuelhalebusiness@gmail.com
 
 Project Link: [https://github.com/ww-samuel-hale/playpal](https://github.com/ww-samuel-hale/playpal)
 
