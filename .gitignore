@@ -25,3 +25,5 @@ BackEnd/playpal.env.production.local
 FrontEnd/playpalnpm-debug.log*
 FrontEnd/playpalyarn-debug.log*
 FrontEnd/playpalyarn-error.log*
+
+BackEnd/playpalenv/*

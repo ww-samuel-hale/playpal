@@ -1,0 +1,13 @@
+Flask
+Flask-Cors
+Flask-Bcrypt
+Flask-SQLAlchemy
+SQLAlchemy
+requests
+scikit-learn
+numpy
+python-dotenv
+igdb-api-v4
+psycopg2-binary
+gunicorn
+fcntl
