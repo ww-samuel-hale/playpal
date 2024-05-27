@@ -94,7 +94,7 @@ The two main features are Machine Learning recommendations, which means that whe
 ### Built With
 
 * [![React][React.js]][React-url]
-* [![Flask][Python Flask][Python-url]
+* [![Flask][Python Flask]][Python-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
