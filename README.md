@@ -30,7 +30,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/ww-samuel-hale/playpal">
-    <img src="images/favicon.png" alt="Logo" width="80" height="80">
+    <img src="FrontEnd/playpal/public/favicon.png" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center"><a href="https://playpal-jwmk.onrender.com">PlayPal</a></h3>
