@@ -80,7 +80,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://imgur.com/a/WdbsayJ)
+[![Product Name Screen Shot][product-screenshot]](https://playpal-jwmk.onrender.com/)
 
 This project was inspired by [Swipefy](https://apps.apple.com/us/app/swipefy-for-spotify/id6449814769), a swipe-based music suggestion software created by a colleague's kid and his pals. I saw this and enjoyed how it worked. This prompted me to consider how else we may use Machine Learning and AI to tackle the content recommendation problem. After considering a few examples, I chose video games for two reasons:
 1) IGDB API provides free development API keys, and I'm not made of money.
@@ -187,7 +187,7 @@ Project Link: [https://github.com/ww-samuel-hale/playpal](https://github.com/ww-
 [issues-url]: https://github.com/ww-samuel-hale/playpal/issues
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/samhale07
-[product-screenshot]: FrontEnd/playpal/public/PlayPalImg
+[product-screenshot]: FrontEnd/playpal/public/PlayPalImg.png
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [React-url]: https://reactjs.org/
 [Python Flask]: https://img.shields.io/badge/Python-Flask-4B8BBE?style=flat&logo=python&logoColor=white
