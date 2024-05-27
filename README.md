@@ -195,4 +195,5 @@ Project Link: [https://github.com/ww-samuel-hale/playpal](https://github.com/ww-
 [PostgresImg]: https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white
 [Postgres-url]: https://www.postgresql.org/
 [PythonImg]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
-[Python-link] https://www.python.org/
+[Python-link]: https://www.python.org/
+
