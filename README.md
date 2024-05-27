@@ -95,6 +95,7 @@ The two main features are Machine Learning recommendations, which means that whe
 
 * [![React][React.js]][React-url]
 * [![Flask][Python Flask]][Python-url]
+* [![PostgreSQL][PostgresImg]][Postgres-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -190,3 +191,5 @@ Project Link: [https://github.com/ww-samuel-hale/playpal](https://github.com/ww-
 [React-url]: https://reactjs.org/
 [Python Flask]: https://img.shields.io/badge/Python-Flask-4B8BBE?style=flat&logo=python&logoColor=white
 [Python-url]: https://flask.palletsprojects.com/en/3.0.x/
+[Postgres]: https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white
+[Postgres-url]: https://www.postgresql.org/
