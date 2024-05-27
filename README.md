@@ -93,7 +93,8 @@ The two main features are Machine Learning recommendations, which means that whe
 
 ### Built With
 
-* [![React][React.js]][React-url]]
+* [![React][React.js]][React-url]
+* [![Flask][Python Flask][Python-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -187,3 +188,5 @@ Project Link: [https://github.com/ww-samuel-hale/playpal](https://github.com/ww-
 [product-screenshot]: images/screenshot.png
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [React-url]: https://reactjs.org/
+[Python Flask]: https://img.shields.io/badge/Python-Flask-4B8BBE?style=flat&logo=python&logoColor=white
+[Python-url]: https://flask.palletsprojects.com/en/3.0.x/
