@@ -80,7 +80,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]]((https://imgur.com/a/WdbsayJ))
+[![Product Name Screen Shot][product-screenshot]](https://imgur.com/a/WdbsayJ)
 
 This project was inspired by [Swipefy](https://apps.apple.com/us/app/swipefy-for-spotify/id6449814769), a swipe-based music suggestion software created by a colleague's kid and his pals. I saw this and enjoyed how it worked. This prompted me to consider how else we may use Machine Learning and AI to tackle the content recommendation problem. After considering a few examples, I chose video games for two reasons:
 1) IGDB API provides free development API keys, and I'm not made of money.
