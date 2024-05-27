@@ -187,7 +187,7 @@ Project Link: [https://github.com/ww-samuel-hale/playpal](https://github.com/ww-
 [issues-url]: https://github.com/ww-samuel-hale/playpal/issues
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/samhale07
-[product-screenshot]: images/screenshot.png
+[product-screenshot]: https://imgur.com/a/WdbsayJ
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [React-url]: https://reactjs.org/
 [Python Flask]: https://img.shields.io/badge/Python-Flask-4B8BBE?style=flat&logo=python&logoColor=white
