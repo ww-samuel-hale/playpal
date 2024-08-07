@@ -6,6 +6,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/BackEnd/server.py",
+            "python": "E:/Git/playpal/BackEnd/venv/Scripts/python.exe",
             "console": "integratedTerminal",
             "env": {
                 "FLASK_APP": "${workspaceFolder}/BackEnd/server.py",
